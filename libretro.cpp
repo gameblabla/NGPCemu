@@ -5,7 +5,13 @@
 #include <libretro.h>
 #include <streams/file_stream.h>
 
+#include <SDL/SDL.h>
+#include <portaudio.h>
+#include <stdint.h>
+
 static MDFNGI *game;
+
+SDL_Surface* real_screen;
 
 struct retro_perf_callback perf_cb;
 retro_get_cpu_features_t perf_get_cpu_features_cb = NULL;
@@ -29,6 +35,8 @@ static bool initial_ports_hookup = false;
 extern "C" char retro_base_directory[1024];
 std::string retro_base_name;
 char retro_save_directory[1024];
+
+static PaStream *apu_stream;
 
 //---------------------------------------------------------------------------
 // NEOPOP : Emulator as in Dreamland
@@ -132,9 +140,54 @@ void reset(void)
    reset_dma();
 }
 
+static int LoadGame_NGP(const char *name)
+{
+	long size;
+	FILE* fp;
+   
+	fp = fopen(name, "rb");
+	if (!fp) return 0;
+	
+	fseek (fp, 0, SEEK_END);   // non-portable
+	
+	size = ftell (fp);
+	printf("size %d\n", size);
+	ngpc_rom.length = size;
+	ngpc_rom.data = (uint8_t *)malloc(size);
+	
+	fseek (fp, 0, SEEK_SET);
+	fread (ngpc_rom.data, sizeof(uint8_t), size, fp);
+	fclose (fp);
+
+	rom_loaded();
+
+	MDFNMP_Init(1024, 1024 * 1024 * 16 / 1024);
+
+	NGPGfx = (ngpgfx_t*)calloc(1, sizeof(*NGPGfx));
+	NGPGfx->layer_enable = 1 | 2 | 4;
+
+	MDFNGameInfo->fps = (uint32)((uint64)6144000 * 65536 * 256 / 515 / 198); // 3072000 * 2 * 10000 / 515 / 198
+
+	MDFNNGPCSOUND_Init();
+
+	MDFNMP_AddRAM(16384, 0x4000, CPUExRAM);
+
+	SetFRM(); // Set up fast read memory mapping
+
+	bios_install();
+
+	z80_runtime = 0;
+
+	reset();
+
+	return(1);
+}
+
+
 static int Load(const char *name, MDFNFILE *fp, const uint8_t *data, size_t size)
 {
-   if ((data != NULL) && (size != 0)) {
+   if ((data != NULL) && (size != 0)) 
+   {
       if (!(ngpc_rom.data = (uint8 *)malloc(size)))
          return(0);
       ngpc_rom.length = size;
@@ -307,15 +360,15 @@ static const InputPortInfoStruct PortInfo[] =
 
 static InputInfoStruct InputInfo =
 {
- sizeof(PortInfo) / sizeof(InputPortInfoStruct),
- PortInfo
+	sizeof(PortInfo) / sizeof(InputPortInfoStruct),
+	PortInfo
 };
 
 static const FileExtensionSpecStruct KnownExtensions[] =
 {
- { ".ngp", "Neo Geo Pocket ROM Image" },
- { ".ngc", "Neo Geo Pocket Color ROM Image" },
- { NULL, NULL }
+	{ ".ngp", "Neo Geo Pocket ROM Image" },
+	{ ".ngc", "Neo Geo Pocket Color ROM Image" },
+	{ NULL, NULL }
 };
 
 MDFNGI EmulatedNGP = {};
@@ -324,22 +377,22 @@ MDFNGI *MDFNGameInfo = &EmulatedNGP;
 
 static void MDFNGI_reset(MDFNGI *gameinfo)
 {
- gameinfo->Settings = NGPSettings;
- gameinfo->MasterClock = MDFN_MASTERCLOCK_FIXED(6144000);
- gameinfo->fps = 0;
- gameinfo->multires = false; // Multires possible?
+	gameinfo->Settings = NGPSettings;
+	gameinfo->MasterClock = MDFN_MASTERCLOCK_FIXED(6144000);
+	gameinfo->fps = 0;
+	gameinfo->multires = false; // Multires possible?
 
- gameinfo->lcm_width = 160;
- gameinfo->lcm_height = 152;
- gameinfo->dummy_separator = NULL;
+	gameinfo->lcm_width = 160;
+	gameinfo->lcm_height = 152;
+	gameinfo->dummy_separator = NULL;
 
- gameinfo->nominal_width = 160;
- gameinfo->nominal_height = 152;
+	gameinfo->nominal_width = 160;
+	gameinfo->nominal_height = 152;
 
- gameinfo->fb_width = 160;
- gameinfo->fb_height = 152;
+	gameinfo->fb_width = 160;
+	gameinfo->fb_height = 152;
 
- gameinfo->soundchan = 2;
+	gameinfo->soundchan = 2;
 }
 
 static MDFNGI *MDFNI_LoadGame(const char *name)
@@ -418,78 +471,8 @@ static void set_basename(const char *path)
 
 const char *mednafen_core_str = MEDNAFEN_CORE_NAME;
 
-static void check_system_specs(void)
-{
-   unsigned level = 0;
-   environ_cb(RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL, &level);
-}
-
 void retro_init(void)
 {
-   struct retro_log_callback log;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
-      log_cb = log.log;
-   else 
-      log_cb = NULL;
-
-   const char *dir = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
-   {
-      std::string retro_base_dir_tmp;
-
-      retro_base_dir_tmp = dir;
-      // Make sure that we don't have any lingering slashes, etc, as they break Windows.
-      size_t last = retro_base_dir_tmp.find_last_not_of("/\\");
-      if (last != std::string::npos)
-         last++;
-
-      retro_base_dir_tmp= retro_base_dir_tmp.substr(0, last);
-
-      strcpy(retro_base_directory, retro_base_dir_tmp.c_str());
-   }
-   else
-   {
-      /* TODO: Add proper fallback */
-      if (log_cb)
-         log_cb(RETRO_LOG_WARN, "System directory is not defined. Fallback on using same dir as ROM for system directory later ...\n");
-      failed_init = true;
-   }
-   
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &dir) && dir)
-   {
-      std::string retro_save_dir_tmp;
-
-	  // If save directory is defined use it, otherwise use system directory
-      retro_save_dir_tmp = *dir ? dir : retro_base_directory;
-      // Make sure that we don't have any lingering slashes, etc, as they break Windows.
-      size_t last = retro_save_dir_tmp.find_last_not_of("/\\");
-      if (last != std::string::npos)
-         last++;
-
-      retro_save_dir_tmp = retro_save_dir_tmp.substr(0, last);      
-
-      strcpy(retro_save_directory, retro_save_dir_tmp.c_str());
-   }
-   else
-   {
-      /* TODO: Add proper fallback */
-      if (log_cb)
-         log_cb(RETRO_LOG_WARN, "Save directory is not defined. Fallback on using SYSTEM directory ...\n");
-      strcpy(retro_save_directory, retro_base_directory);
-   }      
-
-#if defined(FRONTEND_SUPPORTS_RGB565)
-   enum retro_pixel_format rgb565 = RETRO_PIXEL_FORMAT_RGB565;
-   if (environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
-      log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
-#endif
-
-   perf_get_cpu_features_cb = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb))
-      perf_get_cpu_features_cb = perf_cb.get_cpu_features;
-
-   check_system_specs();
    MDFNGI_reset(MDFNGameInfo);
 }
 
@@ -514,20 +497,11 @@ static void set_volume (uint32_t *ptr, unsigned number)
    }
 }
 
+
 static void check_variables(void)
 {
-   struct retro_variable var = {0};
-
-   var.key = "ngp_language";
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if (!strcmp(var.value, "japanese"))
-         setting_ngp_language = 0;
-      else if (!strcmp(var.value, "english"))
-         setting_ngp_language = 1;    
-      retro_reset();
-   }
+	setting_ngp_language = 1;    
+	retro_reset();
 }
 
 #define MAX_PLAYERS 1
@@ -545,38 +519,12 @@ static void hookup_ports(bool force)
    initial_ports_hookup = true;
 }
 
-bool retro_load_game(const struct retro_game_info *info)
+bool retro_load_game(char* path)
 {
-   if (!info || failed_init)
-      return false;
-
-   struct retro_input_descriptor desc[] = {
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "D-Pad Left" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "D-Pad Up" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "D-Pad Down" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "A" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "B" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Option" },
-
-      { 0 },
-   };
-
-   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
-
    overscan = false;
-   environ_cb(RETRO_ENVIRONMENT_GET_OVERSCAN, &overscan);
 
-   set_basename(info->path);
-
-#ifdef LOAD_FROM_MEMORY
-   game = MDFNI_LoadGameData((const uint8_t *)info->data, info->size);
-#else
-   game = MDFNI_LoadGame(info->path);
-#endif
-
-   if (!game)
-      return false;
+   set_basename(path);
+   LoadGame_NGP(path);
 
    MDFN_LoadGameCheats(NULL);
    MDFNMP_InstallReadPatches();
@@ -603,8 +551,8 @@ bool retro_load_game(const struct retro_game_info *info)
    check_variables();
    ngpgfx_set_pixel_format(NGPGfx);
    MDFNNGPC_SetSoundRate(44100);
-
-   return game;
+   
+   return true;
 }
 
 void retro_unload_game(void)
@@ -634,17 +582,6 @@ static void update_input(void)
    for (unsigned i = 0; i < MAX_BUTTONS; i++)
       input_buf |= map[i] != -1u &&
          input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
-
-//not needed at least for wiiu
-#if 0//def MSB_FIRST
-   union {
-      uint8_t b[2];
-      uint16_t s;
-   } u;
-   u.s = input_buf;
-   input_buf = u.b[0] | u.b[1] << 8;
-#endif
-
 }
 
 static uint64_t video_frames, audio_frames;
@@ -693,62 +630,6 @@ void retro_run(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       check_variables();
-}
-
-void retro_get_system_info(struct retro_system_info *info)
-{
-   memset(info, 0, sizeof(*info));
-   info->library_name     = MEDNAFEN_CORE_NAME;
-#ifndef GIT_VERSION
-#define GIT_VERSION ""
-#endif
-
-#ifdef LOAD_FROM_MEMORY
-   info->need_fullpath    = false;
-#else
-   info->need_fullpath    = true;
-#endif
-
-   info->library_version  = MEDNAFEN_CORE_VERSION GIT_VERSION;
-   info->valid_extensions = MEDNAFEN_CORE_EXTENSIONS;
-   info->block_extract    = false;
-}
-
-void retro_get_system_av_info(struct retro_system_av_info *info)
-{
-   memset(info, 0, sizeof(*info));
-   info->timing.fps            = MEDNAFEN_CORE_TIMING_FPS;
-   info->timing.sample_rate    = 44100;
-   info->geometry.base_width   = MEDNAFEN_CORE_GEOMETRY_BASE_W;
-   info->geometry.base_height  = MEDNAFEN_CORE_GEOMETRY_BASE_H;
-   info->geometry.max_width    = MEDNAFEN_CORE_GEOMETRY_MAX_W;
-   info->geometry.max_height   = MEDNAFEN_CORE_GEOMETRY_MAX_H;
-   info->geometry.aspect_ratio = MEDNAFEN_CORE_GEOMETRY_ASPECT_RATIO;
-}
-
-void retro_deinit(void)
-{
-   if (surf)
-      free(surf);
-   surf = NULL;
-
-   if (log_cb)
-   {
-      log_cb(RETRO_LOG_INFO, "[%s]: Samples / Frame: %.5f\n",
-            mednafen_core_str, (double)audio_frames / video_frames);
-      log_cb(RETRO_LOG_INFO, "[%s]: Estimated FPS: %.5f\n",
-            mednafen_core_str, (double)video_frames * 44100 / audio_frames);
-   }
-}
-
-unsigned retro_get_region(void)
-{
-   return RETRO_REGION_NTSC; // FIXME: Regions for other cores.
-}
-
-unsigned retro_api_version(void)
-{
-   return RETRO_API_VERSION;
 }
 
 void retro_set_controller_port_device(unsigned in_port, unsigned device)
@@ -867,31 +748,13 @@ size_t retro_get_memory_size(unsigned type)
    else return 0;
 }
 
-void retro_cheat_reset(void)
-{}
 
-void retro_cheat_set(unsigned, bool, const char *)
-{}
-
-#ifdef _WIN32
-static void sanitize_path(std::string &path)
-{
-   size_t size = path.size();
-   for (size_t i = 0; i < size; i++)
-      if (path[i] == '/')
-         path[i] = '\\';
-}
-#endif
 
 // Use a simpler approach to make sure that things go right for libretro.
 std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 {
    char slash;
-#ifdef _WIN32
-   slash = '\\';
-#else
    slash = '/';
-#endif
    std::string ret;
    switch (type)
    {
@@ -901,9 +764,6 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
          break;
       case MDFNMKF_FIRMWARE:
          ret = std::string(retro_base_directory) + slash + std::string(cd1);
-#ifdef _WIN32
-   sanitize_path(ret); // Because Windows path handling is mongoloid.
-#endif
          break;
       default:	  
          break;
@@ -912,4 +772,94 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
    if (log_cb)
       log_cb(RETRO_LOG_INFO, "MDFN_MakeFName: %s\n", ret.c_str());
    return ret;
+}
+
+/***
+ * Callback for updating the libretro environment.
+ */
+bool retro_environment_callback(unsigned cmd, void *data)
+{
+    // TODO: do something with this data...
+    // Also, retro_init() doesn't work if I just
+    // put a return here, hence the stupid printf.
+    return 0;
+}
+
+int16_t retro_input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id)
+{
+	return 0;
+}
+
+void retro_input_poll_callback()
+{
+
+}
+
+size_t retro_audio_sample_batch_callback(const int16_t *data, size_t frames)
+{
+	PaError err = Pa_WriteStream( apu_stream, data, frames);
+	return frames;
+}
+
+
+void retro_video_refresh_callback(const void *data, unsigned width, unsigned height, size_t pitch)
+{
+	memcpy(real_screen->pixels, data, (width*height)*2);
+	SDL_Flip(real_screen);
+	
+	return;
+}
+
+
+void setup_callbacks()
+{
+    retro_set_environment(&retro_environment_callback);
+    retro_set_video_refresh(&retro_video_refresh_callback);
+    retro_set_input_poll(&retro_input_poll_callback);
+    retro_set_input_state(&retro_input_state_callback);
+    retro_set_audio_sample_batch(&retro_audio_sample_batch_callback);
+}
+
+
+
+int main(int argc, char** argv)
+{
+	uint8_t done = 0;
+	uint8_t* keystate;
+	SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO );
+	SDL_ShowCursor(0);
+	real_screen = SDL_SetVideoMode(160, 152, 16, SDL_HWSURFACE);
+	
+	Pa_Initialize();
+	
+	PaStreamParameters outputParameters;
+	
+	outputParameters.device = Pa_GetDefaultOutputDevice();
+	
+	if (outputParameters.device == paNoDevice) 
+	{
+		printf("No sound output\n");
+		return EXIT_FAILURE;
+	}
+
+	outputParameters.channelCount = 2;
+	outputParameters.sampleFormat = paInt16;
+	outputParameters.hostApiSpecificStreamInfo = NULL;
+	
+	Pa_OpenStream( &apu_stream, NULL, &outputParameters, 44100, 1024, paNoFlag, NULL, NULL);
+	Pa_StartStream( apu_stream );
+	
+	setup_callbacks();
+	retro_load_game(argv[1]);
+	retro_init();
+	
+	while(!done)
+	{
+		keystate = SDL_GetKeyState(NULL);
+		if (keystate[27]) done = 1;
+		retro_run();
+		
+        SDL_Event event;
+        SDL_PollEvent(&event);
+	}
 }

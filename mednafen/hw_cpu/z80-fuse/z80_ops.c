@@ -1854,7 +1854,7 @@ int z80_do_opcode( void )
 #define REGISTER  IX
 #define REGISTERL IXL
 #define REGISTERH IXH
-#include "z80_ddfd.c"
+#include "z80_ddfd.h"
 #undef REGISTERH
 #undef REGISTERL
 #undef REGISTER
@@ -2577,7 +2577,7 @@ int z80_do_opcode( void )
 #define REGISTER  IY
 #define REGISTERL IYL
 #define REGISTERH IYH
-#include "z80_ddfd.c"
+#include "z80_ddfd.h"
 #undef REGISTERH
 #undef REGISTERL
 #undef REGISTER

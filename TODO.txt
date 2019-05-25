@@ -1,0 +1,12 @@
+- Make a menu for it. (like for SwanEmu)
+- Input code.
+- Remove disassembler code. (We don't need it and that slows down things)
+
+- Get rid of the Retroarch's specific code in libretro-common.
+- Switch the core code to C ? Not trivial as it is fairly extensively used here.
+TCLS emulation core is C, so is the Z80 emulation core.
+mempatcher.cpp : A lot of C++ code could be removed, especially cheats.
+So far the biggest roadblocker would be the APU and save state code.
+
+From what i see, it is going to be a bit tricky... but we will have to get rid
+of that code in any case if i want to make it more portable/workable.
