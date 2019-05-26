@@ -13,15 +13,6 @@ static MDFNGI *game;
 
 SDL_Surface* real_screen;
 
-struct retro_perf_callback perf_cb;
-retro_get_cpu_features_t perf_get_cpu_features_cb = NULL;
-retro_log_printf_t log_cb;
-static retro_video_refresh_t video_cb;
-static retro_audio_sample_batch_t audio_batch_cb;
-static retro_environment_t environ_cb;
-static retro_input_poll_t input_poll_cb;
-static retro_input_state_t input_state_cb;
-
 static bool overscan;
 
 static MDFN_Surface *surf;
@@ -151,7 +142,6 @@ static int LoadGame_NGP(const char *name)
 	fseek (fp, 0, SEEK_END);   // non-portable
 	
 	size = ftell (fp);
-	printf("size %d\n", size);
 	ngpc_rom.length = size;
 	ngpc_rom.data = (uint8_t *)malloc(size);
 	
@@ -181,49 +171,6 @@ static int LoadGame_NGP(const char *name)
 	reset();
 
 	return(1);
-}
-
-
-static int Load(const char *name, MDFNFILE *fp, const uint8_t *data, size_t size)
-{
-   if ((data != NULL) && (size != 0)) 
-   {
-      if (!(ngpc_rom.data = (uint8 *)malloc(size)))
-         return(0);
-      ngpc_rom.length = size;
-      memcpy(ngpc_rom.data, data, size);
-   }
-   else
-   {
-      if(!(ngpc_rom.data = (uint8 *)malloc(fp->size)))
-         return(0);
-
-      ngpc_rom.length = fp->size;
-      memcpy(ngpc_rom.data, fp->data, fp->size);
-   }
-
-   rom_loaded();
-
-   MDFNMP_Init(1024, 1024 * 1024 * 16 / 1024);
-
-   NGPGfx = (ngpgfx_t*)calloc(1, sizeof(*NGPGfx));
-   NGPGfx->layer_enable = 1 | 2 | 4;
-
-   MDFNGameInfo->fps = (uint32)((uint64)6144000 * 65536 * 256 / 515 / 198); // 3072000 * 2 * 10000 / 515 / 198
-
-   MDFNNGPCSOUND_Init();
-
-   MDFNMP_AddRAM(16384, 0x4000, CPUExRAM);
-
-   SetFRM(); // Set up fast read memory mapping
-
-   bios_install();
-
-   z80_runtime = 0;
-
-   reset();
-
-   return(1);
 }
 
 static void CloseGame(void)
@@ -298,16 +245,6 @@ int StateAction(StateMem *sm, int load, int data_only)
    return(1);
 }
 
-static void DoSimpleCommand(int cmd)
-{
-   switch(cmd)
-   {
-      case MDFN_MSC_POWER:
-      case MDFN_MSC_RESET:
-         reset();
-         break;
-   }
-}
 
 static const MDFNSetting_EnumList LanguageList[] =
 {
@@ -395,40 +332,6 @@ static void MDFNGI_reset(MDFNGI *gameinfo)
 	gameinfo->soundchan = 2;
 }
 
-static MDFNGI *MDFNI_LoadGame(const char *name)
-{
-   MDFNFILE *GameFile = file_open(name);
-
-   if(!GameFile)
-      goto error;
-
-   if(Load(name, GameFile, NULL, 0) <= 0)
-      goto error;
-
-   file_close(GameFile);
-   GameFile     = NULL;
-
-   return MDFNGameInfo;
-
-error:
-   if (GameFile)
-      file_close(GameFile);
-   GameFile     = NULL;
-   MDFNGI_reset(MDFNGameInfo);
-   return(0);
-}
-
-static MDFNGI *MDFNI_LoadGameData(const uint8_t *data, size_t size)
-{
-   if(Load("", NULL, data, size) <= 0)
-      goto error;
-   return MDFNGameInfo;
-
-error:
-   MDFNGI_reset(MDFNGameInfo);
-   return(0);
-}
-
 static void MDFNI_CloseGame(void)
 {
    if(!MDFNGameInfo)
@@ -436,20 +339,6 @@ static void MDFNI_CloseGame(void)
 
    CloseGame();
    MDFNGI_reset(MDFNGameInfo);
-}
-
-static void set_basename(const char *path)
-{
-   const char *base = strrchr(path, '/');
-   if (!base)
-      base = strrchr(path, '\\');
-
-   if (base)
-      retro_base_name = base + 1;
-   else
-      retro_base_name = path;
-
-   retro_base_name = retro_base_name.substr(0, retro_base_name.find_last_of('.'));
 }
 
 #define MEDNAFEN_CORE_NAME_MODULE "ngp"
@@ -471,20 +360,6 @@ static void set_basename(const char *path)
 
 const char *mednafen_core_str = MEDNAFEN_CORE_NAME;
 
-void retro_init(void)
-{
-   MDFNGI_reset(MDFNGameInfo);
-}
-
-void retro_reset(void)
-{
-   DoSimpleCommand(MDFN_MSC_RESET);
-}
-
-bool retro_load_game_special(unsigned, const struct retro_game_info *, size_t)
-{
-   return false;
-}
 
 static void set_volume (uint32_t *ptr, unsigned number)
 {
@@ -501,7 +376,7 @@ static void set_volume (uint32_t *ptr, unsigned number)
 static void check_variables(void)
 {
 	setting_ngp_language = 1;    
-	retro_reset();
+	reset();
 }
 
 #define MAX_PLAYERS 1
@@ -523,7 +398,6 @@ bool retro_load_game(char* path)
 {
    overscan = false;
 
-   set_basename(path);
    LoadGame_NGP(path);
 
    MDFN_LoadGameCheats(NULL);
@@ -567,7 +441,7 @@ void retro_unload_game(void)
 
 static void update_input(void)
 {
-   input_buf = 0;
+   /*input_buf = 0;
 
    static unsigned map[] = {
       RETRO_DEVICE_ID_JOYPAD_UP, //X Cursor horizontal-layout games
@@ -581,100 +455,51 @@ static void update_input(void)
 
    for (unsigned i = 0; i < MAX_BUTTONS; i++)
       input_buf |= map[i] != -1u &&
-         input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+         input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;*/
 }
 
 static uint64_t video_frames, audio_frames;
 
 void retro_run(void)
 {
-   int32 SoundBufSize;
-   unsigned width, height;
-   static int16_t sound_buf[0x10000];
-   static MDFN_Rect rects[FB_MAX_HEIGHT];
-   EmulateSpecStruct spec = {0};
-   bool updated = false;
+	int32 SoundBufSize;
+	unsigned width, height;
+	static int16_t sound_buf[0x10000];
+	static MDFN_Rect rects[FB_MAX_HEIGHT];
+	EmulateSpecStruct spec = {0};
+	bool updated = false;
 
-   input_poll_cb();
+	update_input();
 
-   update_input();
+	rects[0].w              = ~0;
 
-   rects[0].w              = ~0;
+	spec.surface            = surf;
+	spec.SoundRate          = 44100;
+	spec.SoundBuf           = sound_buf;
+	spec.LineWidths         = rects;
+	spec.SoundBufMaxSize    = sizeof(sound_buf) / 2;
+	spec.SoundVolume        = 1.0;
+	spec.soundmultiplier    = 1.0;
+	spec.SoundBufSize       = 0;
+	spec.VideoFormatChanged = false;
+	spec.SoundFormatChanged = false;
 
-   spec.surface            = surf;
-   spec.SoundRate          = 44100;
-   spec.SoundBuf           = sound_buf;
-   spec.LineWidths         = rects;
-   spec.SoundBufMaxSize    = sizeof(sound_buf) / 2;
-   spec.SoundVolume        = 1.0;
-   spec.soundmultiplier    = 1.0;
-   spec.SoundBufSize       = 0;
-   spec.VideoFormatChanged = false;
-   spec.SoundFormatChanged = false;
+	Emulate(&spec);
 
-   Emulate(&spec);
+	SoundBufSize    = spec.SoundBufSize - spec.SoundBufSizeALMS;
 
-   SoundBufSize    = spec.SoundBufSize - spec.SoundBufSizeALMS;
+	spec.SoundBufSize = spec.SoundBufSizeALMS + SoundBufSize;
 
-   spec.SoundBufSize = spec.SoundBufSizeALMS + SoundBufSize;
+	width  = spec.DisplayRect.w;
+	height = spec.DisplayRect.h;
 
-   width  = spec.DisplayRect.w;
-   height = spec.DisplayRect.h;
+	memcpy(real_screen->pixels, surf->pixels, (FB_WIDTH * FB_HEIGHT)*2);
+	SDL_Flip(real_screen);
 
-   video_cb(surf->pixels, width, height, FB_WIDTH << 1);
+	video_frames++;
+	audio_frames += spec.SoundBufSize;
 
-   video_frames++;
-   audio_frames += spec.SoundBufSize;
-
-   audio_batch_cb(spec.SoundBuf, spec.SoundBufSize);
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
-      check_variables();
-}
-
-void retro_set_controller_port_device(unsigned in_port, unsigned device)
-{
-}
-
-void retro_set_environment(retro_environment_t cb)
-{
-   struct retro_vfs_interface_info vfs_iface_info;
-   environ_cb = cb;
-
-   static const struct retro_variable vars[] = {
-      { "ngp_language", "Language (restart); english|japanese" },
-      { NULL, NULL },
-   };
-   cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
-
-   vfs_iface_info.required_interface_version = 1;
-   vfs_iface_info.iface                      = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info))
-	   filestream_vfs_init(&vfs_iface_info);
-}
-
-void retro_set_audio_sample(retro_audio_sample_t cb)
-{
-}
-
-void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
-{
-   audio_batch_cb = cb;
-}
-
-void retro_set_input_poll(retro_input_poll_t cb)
-{
-   input_poll_cb = cb;
-}
-
-void retro_set_input_state(retro_input_state_t cb)
-{
-   input_state_cb = cb;
-}
-
-void retro_set_video_refresh(retro_video_refresh_t cb)
-{
-   video_cb = cb;
+	Pa_WriteStream( apu_stream, spec.SoundBuf, spec.SoundBufSize);
 }
 
 static size_t serialize_size;
@@ -769,63 +594,36 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
          break;
    }
 
-   if (log_cb)
-      log_cb(RETRO_LOG_INFO, "MDFN_MakeFName: %s\n", ret.c_str());
    return ret;
 }
 
-/***
- * Callback for updating the libretro environment.
- */
-bool retro_environment_callback(unsigned cmd, void *data)
+static uint8_t done = 0;
+
+void Input_Poll()
 {
-    // TODO: do something with this data...
-    // Also, retro_init() doesn't work if I just
-    // put a return here, hence the stupid printf.
-    return 0;
-}
-
-int16_t retro_input_state_callback(unsigned port, unsigned device, unsigned index, unsigned id)
-{
-	return 0;
-}
-
-void retro_input_poll_callback()
-{
-
-}
-
-size_t retro_audio_sample_batch_callback(const int16_t *data, size_t frames)
-{
-	PaError err = Pa_WriteStream( apu_stream, data, frames);
-	return frames;
-}
-
-
-void retro_video_refresh_callback(const void *data, unsigned width, unsigned height, size_t pitch)
-{
-	memcpy(real_screen->pixels, data, (width*height)*2);
-	SDL_Flip(real_screen);
+	SDL_Event event;
+	uint8_t* keystate = SDL_GetKeyState(NULL);
+	if (keystate[27]) done = 1;
+		
+	input_buf = 0;
 	
-	return;
-}
-
-
-void setup_callbacks()
-{
-    retro_set_environment(&retro_environment_callback);
-    retro_set_video_refresh(&retro_video_refresh_callback);
-    retro_set_input_poll(&retro_input_poll_callback);
-    retro_set_input_state(&retro_input_state_callback);
-    retro_set_audio_sample_batch(&retro_audio_sample_batch_callback);
+	if (keystate[SDLK_UP])	input_buf |= 0x01;
+	else if (keystate[SDLK_DOWN]) input_buf |= 0x02;
+		
+	if (keystate[SDLK_LEFT]) input_buf |= 0x04;
+	else if (keystate[SDLK_RIGHT]) input_buf |= 0x08;
+		
+	if (keystate[SDLK_LCTRL]) input_buf |= 0x10;
+	if (keystate[SDLK_LALT]) input_buf |= 0x20;
+	if (keystate[SDLK_RETURN]) input_buf |= 0x40;
+        
+	SDL_PollEvent(&event);
 }
 
 
 
 int main(int argc, char** argv)
 {
-	uint8_t done = 0;
-	uint8_t* keystate;
 	SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO );
 	SDL_ShowCursor(0);
 	real_screen = SDL_SetVideoMode(160, 152, 16, SDL_HWSURFACE);
@@ -849,17 +647,12 @@ int main(int argc, char** argv)
 	Pa_OpenStream( &apu_stream, NULL, &outputParameters, 44100, 1024, paNoFlag, NULL, NULL);
 	Pa_StartStream( apu_stream );
 	
-	setup_callbacks();
 	retro_load_game(argv[1]);
-	retro_init();
+	check_variables();
 	
 	while(!done)
 	{
-		keystate = SDL_GetKeyState(NULL);
-		if (keystate[27]) done = 1;
 		retro_run();
-		
-        SDL_Event event;
-        SDL_PollEvent(&event);
+		Input_Poll();
 	}
 }
