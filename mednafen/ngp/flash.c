@@ -20,8 +20,6 @@
 #include "rom.h"
 #include "system.h"
 
-#include "../state.h"
-
 //-----------------------------------------------------------------------------
 // Local Definitions
 //-----------------------------------------------------------------------------
@@ -266,12 +264,14 @@ uint8_t *make_flash_commit(int32_t *length)
 
 void flash_commit(void)
 {
-   int32_t length = 0;
-   uint8_t *flashdata = make_flash_commit(&length);
+	int32_t length = 0;
+	uint8_t *flashdata = make_flash_commit(&length);
 
-   if (!flashdata)
-      return;
+	if (!flashdata)
+	{
+		return;
+	}
 
-   system_io_flash_write(flashdata, length);
-   free(flashdata);
+	system_io_flash_write(flashdata, length);
+	free(flashdata);
 }

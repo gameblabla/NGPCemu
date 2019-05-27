@@ -24,6 +24,7 @@
 #include "Z80_interface.h"
 #include "dma.h"
 #include "system.h"
+#include "neopop.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -236,9 +237,6 @@ void TestIntHDMA(int bios_num, int vec_num)
       set_interrupt(bios_num, true);
 }
 
-
-extern "C" int32_t ngpc_soundTS;
-extern "C" bool NGPFrameSkip;
 
 bool updateTimers(void *data, int cputicks)
 {
@@ -554,6 +552,56 @@ uint8_t timer_read8(uint32_t address)
    return 0x4;
 }
 
+
+
+void NGP_INTSaveState(uint_fast8_t load, FILE* fp)
+{
+	/* Load state */
+	if (load == 1)
+	{
+		fread(&timer_hint, sizeof(uint8_t), sizeof(timer_hint), fp);
+		fread(&timer_clock, sizeof(uint8_t), sizeof(timer_clock), fp);
+		fread(&timer, sizeof(uint8_t), sizeof(timer), fp);
+		fread(&timer_threshold, sizeof(uint8_t), sizeof(timer_threshold), fp);
+		
+		fread(&TRUN, sizeof(uint8_t), sizeof(TRUN), fp);
+		fread(&T01MOD, sizeof(uint8_t), sizeof(T01MOD), fp);
+		fread(&T23MOD, sizeof(uint8_t), sizeof(T23MOD), fp);
+		fread(&TRDC, sizeof(uint8_t), sizeof(TRDC), fp);
+		
+		fread(&TFFCR, sizeof(uint8_t), sizeof(TFFCR), fp);
+		fread(&HDMAStartVector, sizeof(uint8_t), sizeof(HDMAStartVector), fp);
+		fread(&ipending, sizeof(uint8_t), sizeof(ipending), fp);
+		fread(&IntPrio, sizeof(uint8_t), sizeof(IntPrio), fp);
+		
+		fread(&h_int, sizeof(uint8_t), sizeof(h_int), fp);
+		fread(&timer0, sizeof(uint8_t), sizeof(timer0), fp);
+		fread(&timer2, sizeof(uint8_t), sizeof(timer2), fp);
+	}
+	/* Save State */
+	else
+	{
+		fwrite(&timer_hint, sizeof(uint8_t), sizeof(timer_hint), fp);
+		fwrite(&timer_clock, sizeof(uint8_t), sizeof(timer_clock), fp);
+		fwrite(&timer, sizeof(uint8_t), sizeof(timer), fp);
+		fwrite(&timer_threshold, sizeof(uint8_t), sizeof(timer_threshold), fp);
+		
+		fwrite(&TRUN, sizeof(uint8_t), sizeof(TRUN), fp);
+		fwrite(&T01MOD, sizeof(uint8_t), sizeof(T01MOD), fp);
+		fwrite(&T23MOD, sizeof(uint8_t), sizeof(T23MOD), fp);
+		fwrite(&TRDC, sizeof(uint8_t), sizeof(TRDC), fp);
+		
+		fwrite(&TFFCR, sizeof(uint8_t), sizeof(TFFCR), fp);
+		fwrite(&HDMAStartVector, sizeof(uint8_t), sizeof(HDMAStartVector), fp);
+		fwrite(&ipending, sizeof(uint8_t), sizeof(ipending), fp);
+		fwrite(&IntPrio, sizeof(uint8_t), sizeof(IntPrio), fp);
+		
+		fwrite(&h_int, sizeof(uint8_t), sizeof(h_int), fp);
+		fwrite(&timer0, sizeof(uint8_t), sizeof(timer0), fp);
+		fwrite(&timer2, sizeof(uint8_t), sizeof(timer2), fp);
+	}
+}
+/*
 int int_timer_StateAction(void *data, int load, int data_only)
 {
    SFORMAT StateRegs[] =
@@ -578,7 +626,7 @@ int int_timer_StateAction(void *data, int load, int data_only)
       return 0;
 
    return 1;
-}
+}*/
 
 #ifdef __cplusplus
 }

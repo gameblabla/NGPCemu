@@ -19,7 +19,6 @@
 #include "mem.h"
 #include "flash.h"
 #include "interrupt.h"
-#include "../state.h"
 
 #include <boolean.h>
 
@@ -419,6 +418,20 @@ void iBIOSHLE(void)
 }
 #endif
 
+void NGP_HLESaveState(uint_fast8_t load, FILE* fp)
+{
+	if (load == 1)
+	{
+		fread(&CacheIntPrio, sizeof(uint8_t), sizeof(CacheIntPrio), fp);
+	}
+	else
+	{
+		fwrite(&CacheIntPrio, sizeof(uint8_t), sizeof(CacheIntPrio), fp);
+	}
+}
+
+/*
+
 int BIOSHLE_StateAction(void *data, int load, int data_only)
 {
    SFORMAT StateRegs[] =
@@ -432,3 +445,4 @@ int BIOSHLE_StateAction(void *data, int load, int data_only)
 
    return 1;
 }
+*/

@@ -16,7 +16,6 @@
 #include "dma.h"
 #include "mem.h"
 #include "interrupt.h"
-#include "../state.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -299,21 +298,22 @@ uint32_t dmaLoadL(uint8_t cr)
    return 0;
 }
 
-int MDFNNGPCDMA_StateAction(void *data, int load, int data_only)
+void NGP_DMASaveState(uint_fast8_t load, FILE* fp)
 {
-   SFORMAT StateRegs[] =
-   {
-      { dmaS, (uint32_t)((4) * sizeof(uint32_t)), 0x40000000, "DMAS" },
-      { dmaD, (uint32_t)((4) * sizeof(uint32_t)), 0x40000000, "DMAD" },
-      { dmaC, (uint32_t)((4) * sizeof(uint16_t)), 0x20000000, "DMAC" },
-      { dmaM, (uint32_t)(4), 0, "DMAM" },
-      { 0, 0, 0, 0 }
-   };
-
-   if(!MDFNSS_StateAction(data, load, data_only, StateRegs, "DMA", false))
-      return 0;
-
-   return 1; 
+	if (load == 1)
+	{
+		fread(&dmaS, sizeof(uint8_t), sizeof(dmaS), fp);
+		fread(&dmaD, sizeof(uint8_t), sizeof(dmaD), fp);
+		fread(&dmaC, sizeof(uint8_t), sizeof(dmaC), fp);
+		fread(&dmaM, sizeof(uint8_t), sizeof(dmaM), fp);
+	}
+	else
+	{
+		fwrite(&dmaS, sizeof(uint8_t), sizeof(dmaS), fp);
+		fwrite(&dmaD, sizeof(uint8_t), sizeof(dmaD), fp);
+		fwrite(&dmaC, sizeof(uint8_t), sizeof(dmaC), fp);
+		fwrite(&dmaM, sizeof(uint8_t), sizeof(dmaM), fp);
+	}
 }
 
 #ifdef __cplusplus

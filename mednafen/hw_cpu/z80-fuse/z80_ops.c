@@ -29,9 +29,6 @@
 #include "z80_macros.h"
 #include "z80_fns.h"
 
-bool NGPFrameSkip;
-int32_t ngpc_soundTS = 0;
-
 int iline = 0;
 
 void z80_set_interrupt(int set)

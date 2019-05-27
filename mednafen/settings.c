@@ -22,7 +22,7 @@
 #include "settings.h"
 
 char retro_base_directory[1024];
-uint32_t setting_ngp_language = 0;
+uint32_t setting_ngp_language = 1;
 
 uint64_t MDFN_GetSettingUI(const char *name)
 {

@@ -4,7 +4,6 @@
 #include "../include/blip/Blip_Buffer.h"
 #include "../include/blip/Stereo_Buffer.h"
 #include "T6W28_Apu.h"
-#include "../state.h"
 
 static T6W28_Apu apu;
 
@@ -15,8 +14,11 @@ static uint8_t CurrentDACLeft = 0, CurrentDACRight = 0;
 
 typedef Blip_Synth<blip_good_quality, 0xFF> Synth;
 static Synth synth;
-extern "C" int32_t ngpc_soundTS;
 static bool schipenable = 0;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void MDFNNGPCSOUND_SetEnable(bool set)
 {
@@ -93,51 +95,62 @@ bool MDFNNGPC_SetSoundRate(uint32_t rate)
    return(true);
 }
 
-int MDFNNGPCSOUND_StateAction(void *data, int load, int data_only)
+void NGP_APUSaveState(uint_fast8_t load, FILE* fp)
 {
-   T6W28_ApuState *sn_state;
+	T6W28_ApuState *sn_state;
+	
+	/* Load state */
+	if (load == 1)
+	{
+		sn_state = (T6W28_ApuState *)malloc(sizeof(T6W28_ApuState));
+		
+		fread(&CurrentDACLeft, sizeof(uint8_t), sizeof(CurrentDACLeft), fp);
+		fread(&CurrentDACRight, sizeof(uint8_t), sizeof(CurrentDACRight), fp);
+		fread(&schipenable, sizeof(uint8_t), sizeof(schipenable), fp);
+		fread(&sn_state->delay, sizeof(uint8_t), sizeof(sn_state->delay), fp);
+		fread(&sn_state->volume_left, sizeof(uint8_t), sizeof(sn_state->volume_left), fp);
+		fread(&sn_state->volume_right, sizeof(uint8_t), sizeof(sn_state->volume_right), fp);
+		fread(&sn_state->sq_period, sizeof(uint8_t), sizeof(sn_state->sq_period), fp);
+		fread(&sn_state->sq_phase, sizeof(uint8_t), sizeof(sn_state->sq_phase), fp);
 
-   if(!load)
-      sn_state = apu.save_state();
-   else
-      sn_state = (T6W28_ApuState *)malloc(sizeof(T6W28_ApuState));
+		fread(&sn_state->noise_period, sizeof(uint8_t), sizeof(sn_state->noise_period), fp);
+		fread(&sn_state->noise_shifter, sizeof(uint8_t), sizeof(sn_state->noise_shifter), fp);
+		fread(&sn_state->noise_tap, sizeof(uint8_t), sizeof(sn_state->noise_tap), fp);
+		fread(&sn_state->noise_period_extra, sizeof(uint8_t), sizeof(sn_state->noise_period_extra), fp);
+		fread(&sn_state->latch_left, sizeof(uint8_t), sizeof(sn_state->latch_left), fp);
+		fread(&sn_state->latch_right, sizeof(uint8_t), sizeof(sn_state->latch_right), fp);
+		
+		apu.load_state(sn_state);
+		synth.offset(ngpc_soundTS >> 1, CurrentDACLeft - LastDACLeft, buf.left());
+		synth.offset(ngpc_soundTS >> 1, CurrentDACRight - LastDACRight, buf.right());
+		LastDACLeft = CurrentDACLeft;
+		LastDACRight = CurrentDACRight;
+	}
+	/* Save State */
+	else
+	{
+		sn_state = apu.save_state();
+		
+		fwrite(&CurrentDACLeft, sizeof(uint8_t), sizeof(CurrentDACLeft), fp);
+		fwrite(&CurrentDACRight, sizeof(uint8_t), sizeof(CurrentDACRight), fp);
+		fwrite(&schipenable, sizeof(uint8_t), sizeof(schipenable), fp);
+		fwrite(&sn_state->delay, sizeof(uint8_t), sizeof(sn_state->delay), fp);
+		fwrite(&sn_state->volume_left, sizeof(uint8_t), sizeof(sn_state->volume_left), fp);
+		fwrite(&sn_state->volume_right, sizeof(uint8_t), sizeof(sn_state->volume_right), fp);
+		fwrite(&sn_state->sq_period, sizeof(uint8_t), sizeof(sn_state->sq_period), fp);
+		fwrite(&sn_state->sq_phase, sizeof(uint8_t), sizeof(sn_state->sq_phase), fp);
 
-   SFORMAT StateRegs[] =
-   {
-      SFVAR(CurrentDACLeft),
-      SFVAR(CurrentDACRight),
-
-      SFVAR(schipenable),
-
-      SFARRAY32N(sn_state->delay, 4, "Delay"),
-      SFARRAY32N(sn_state->volume_left, 4, "VolumeLeft"),
-      SFARRAY32N(sn_state->volume_right, 4, "VolumeRight"),
-      SFARRAY32N(sn_state->sq_period, 3, "SQPeriod"),
-      SFARRAY32N(sn_state->sq_phase, 3, "SQPhase"),
-      SFVARN(sn_state->noise_period, "NPeriod"),
-      SFVARN(sn_state->noise_shifter, "NShifter"),
-      SFVARN(sn_state->noise_tap, "NTap"),
-      SFVARN(sn_state->noise_period_extra, "NPeriodExtra"),
-      SFVARN(sn_state->latch_left, "LatchLeft"),
-      SFVARN(sn_state->latch_right, "LatchRight"),
-      SFEND
-   };
-
-   if(!MDFNSS_StateAction(data, load, data_only, StateRegs, "SND", false))
-   {
-      free(sn_state);
-      return 0;
-   }
-
-   if(load)
-   {
-      apu.load_state(sn_state);
-      synth.offset(ngpc_soundTS >> 1, CurrentDACLeft - LastDACLeft, buf.left());
-      synth.offset(ngpc_soundTS >> 1, CurrentDACRight - LastDACRight, buf.right());
-      LastDACLeft = CurrentDACLeft;
-      LastDACRight = CurrentDACRight;
-   }
-
-   free(sn_state);
-   return 1;
+		fwrite(&sn_state->noise_period, sizeof(uint8_t), sizeof(sn_state->noise_period), fp);
+		fwrite(&sn_state->noise_shifter, sizeof(uint8_t), sizeof(sn_state->noise_shifter), fp);
+		fwrite(&sn_state->noise_tap, sizeof(uint8_t), sizeof(sn_state->noise_tap), fp);
+		fwrite(&sn_state->noise_period_extra, sizeof(uint8_t), sizeof(sn_state->noise_period_extra), fp);
+		fwrite(&sn_state->latch_left, sizeof(uint8_t), sizeof(sn_state->latch_left), fp);
+		fwrite(&sn_state->latch_right, sizeof(uint8_t), sizeof(sn_state->latch_right), fp);
+	}
+	
+	free(sn_state);
 }
+
+#ifdef __cplusplus
+}
+#endif

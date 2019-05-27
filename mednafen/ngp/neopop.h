@@ -21,7 +21,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "TLCS-900h/TLCS900h_disassemble.h"
 #include "TLCS-900h/TLCS900h_interpret_dst.h"
 #include "TLCS-900h/TLCS900h_interpret.h"
 #include "TLCS-900h/TLCS900h_interpret_reg.h"
@@ -64,4 +63,7 @@ extern COLOURMODE system_colour;
 void int_redo_icache(void);
 
 extern uint8_t NGPJoyLatch;
+extern int32_t ngpc_soundTS;
+extern uint_fast8_t NGPFrameSkip;
+
 #endif

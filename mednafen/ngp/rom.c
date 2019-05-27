@@ -11,11 +11,10 @@
 //	(at your option) any later version. See also the license.txt file for
 //	additional informations.
 //---------------------------------------------------------------------------
-
+#include <stdint.h>
 #include "neopop.h"
 #include "flash.h"
 #include "interrupt.h"
-#include "TLCS-900h/TLCS900h_disassemble.h"
 #include "../mednafen.h"
 
 #ifdef MSB_FIRST
@@ -105,7 +104,7 @@ void rom_unload(void)
 {
    if (ngpc_rom.data)
    {
-      int i;
+      uint_fast8_t i;
 
       flash_commit();
 

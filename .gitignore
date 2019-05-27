@@ -6,3 +6,5 @@
 /old
 *.ngp
 *.ngc
+*.sts
+*.elf
