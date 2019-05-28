@@ -8,3 +8,7 @@
 *.ngc
 *.sts
 *.elf
+*.out
+*.gcda
+*.ipk
+*.opk
