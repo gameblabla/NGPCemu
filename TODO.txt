@@ -1,6 +1,16 @@
-- Make a menu for it. (like for SwanEmu)
-- Input code.
+- It's a bit sluggish on the LDK and especially the RS-90.
 
-- Switch the core code to C ? DONE.
+Not sure how i can speed it up... Frameskipping ?
+According to gprof, most of the time is spent on drawing tiles/sprites on-screen
+so using frameskipping can save a great amount of CPU time.
+
+However, we would also need to tweak the Audio code so it plays nice with the frameskipping
+or else the audio will still sound like crap.
+
+At the moment, only frameskipping is implemented.
+
+- Switch the core code to C ? Mostly DONE.
 Most of the code has been switched to ANSI C, except for the Audio code.
 Unfortunately, it's not easily switchable because there are no C replacements for Stereo_Buffer.
+At least it does not link against the C++ library.
+
