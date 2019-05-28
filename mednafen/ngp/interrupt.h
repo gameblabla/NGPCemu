@@ -54,7 +54,6 @@ uint8_t int_read8(uint32_t address);
 void int_check_pending(void);
 void TestIntHDMA(int bios_num, int vec_num);
 
-int int_timer_StateAction(void *data, int load, int data_only);
 
 #ifdef __cplusplus
 }

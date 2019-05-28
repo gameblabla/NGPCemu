@@ -8,6 +8,8 @@
 
 #include "../general.h"
 
+extern char EEPROM_filepath[512];
+
 uint_fast8_t system_comms_read(uint8_t* buffer)
 {
    return 0;
@@ -25,7 +27,7 @@ void system_comms_write(uint8_t data)
 uint_fast8_t system_io_flash_read(uint8_t* buffer, uint32_t bufferLength)
 {
 	FILE* fp;
-	fp = fopen("./game.sav", "rb");
+	fp = fopen(EEPROM_filepath, "rb");
 	
 	if (!fp) return 0;
 	
@@ -38,7 +40,7 @@ uint_fast8_t system_io_flash_read(uint8_t* buffer, uint32_t bufferLength)
 uint_fast8_t system_io_flash_write(uint8_t *buffer, uint32_t bufferLength)
 {
 	FILE* fp;
-	fp = fopen("./game.sav", "wb");
+	fp = fopen(EEPROM_filepath, "wb");
 	if (!fp) return 0;
 	
 	fwrite(&buffer, sizeof(uint8_t), bufferLength, fp);

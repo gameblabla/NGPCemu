@@ -8,16 +8,9 @@
 
 #include "git.h"
 
-#ifdef _WIN32
-#define strcasecmp _stricmp
-#endif
-
 extern MDFNGI *MDFNGameInfo;
 
 #include "settings.h"
-
-void MDFN_LoadGameCheats(void *override);
-void MDFN_FlushGameCheats(int nosave);
 
 #include "mednafen-driver.h"
 

@@ -4,6 +4,7 @@
 #include "../include/blip/Blip_Buffer.h"
 #include "../include/blip/Stereo_Buffer.h"
 #include "T6W28_Apu.h"
+#include "shared.h"
 
 static T6W28_Apu apu;
 
@@ -91,7 +92,7 @@ void MDFNNGPCSOUND_Init(void)
 
 bool MDFNNGPC_SetSoundRate(uint32_t rate)
 {
-   buf.set_sample_rate(rate?rate:44100, 60);
+   buf.set_sample_rate(rate ? rate : SOUND_OUTPUT_FREQUENCY, 60);
    return(true);
 }
 

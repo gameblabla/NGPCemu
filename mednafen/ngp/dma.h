@@ -33,8 +33,6 @@ void dmaStoreB(uint8_t cr, uint8_t data);
 void dmaStoreW(uint8_t cr, uint16_t data);
 void dmaStoreL(uint8_t cr, uint32_t data);
 
-int MDFNNGPCDMA_StateAction(void *data, int load, int data_only);
-
 #ifdef __cplusplus
 }
 #endif

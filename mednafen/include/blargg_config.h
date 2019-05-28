@@ -11,7 +11,7 @@
 //#define GME_TYPE_LIST gme_nsf_type, gme_gbs_type
 
 // Uncomment to enable platform-specific optimizations
-//#define BLARGG_NONPORTABLE 1
+#define BLARGG_NONPORTABLE 1
 
 // Uncomment to use faster, lower quality sound synthesis
 //#define BLIP_BUFFER_FAST 1
