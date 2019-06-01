@@ -381,7 +381,6 @@ void Run_Emu(void)
 			FrameSkip = 60 / FPS;
 			if (FrameSkip > 4) FrameSkip = 4;
 		}
-		printf("FPS %d\n", FPS);
 	}
 #endif
 	

@@ -69,6 +69,8 @@ static void config_load()
 		option.config_buttons[4] = 306;
 		option.config_buttons[5] = 308;
 		option.config_buttons[6] = 13;
+		
+		option.fullscreen = 2;
 	}
 }
 
