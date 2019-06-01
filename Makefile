@@ -18,9 +18,9 @@ GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 INCLUDES	= -Imednafen/include -I./ -I./mednafen -I./mednafen/hw_cpu/z80-fuse -I./mednafen/ngp -I./mednafen/ngp/TLCS-900h -I./mednafen/sound
 INCLUDES	+= -Ishell/headers -Ishell/video/$(PORT) -Ishell/audio -Ishell/scalers -Ishell/input/sdl -Ishell/fonts -Ishell/menu/$(MENU)
 
-DEFINES		= -DLSB_FIRST -DINLINE="inline" -DWANT_16BPP -DFRONTEND_SUPPORTS_RGB565 -DINLINE="inline" -DNDEBUG
+DEFINES		= -DLSB_FIRST -DINLINE="inline" -DWANT_16BPP -DFRONTEND_SUPPORTS_RGB565 -DINLINE="inline" -DNDEBUG -DWANT_STEREO_SOUND
 DEFINES		+= -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.31\" -DPACKAGE=\"mednafen\" -DMEDNAFEN_VERSION_NUMERIC=931 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DSTDC_HEADERS -D__STDC_LIMIT_MACROS -D_LOW_ACCURACY_
-DEFINES		+= -DGIT_VERSION=\"$(GIT_VERSION)\" 
+DEFINES		+= -DGIT_VERSION=\"$(GIT_VERSION)\"
 
 CFLAGS		= -Ofast -march=native -g -fno-common -Wall $(INCLUDES) $(DEFINES)
 CXXFLAGS	= $(CFLAGS) -nostdinc++ -fno-rtti -fno-exceptions -std=gnu++11
