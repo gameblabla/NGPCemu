@@ -262,7 +262,7 @@ void T6W28_Apu::reset()
 
 void T6W28_Apu::run_until( sms_time_t end_time )
 {
-   int i;
+   uint_fast8_t i;
    require( end_time >= last_time ); // end_time must not be before previous time
 
    if ( end_time > last_time )

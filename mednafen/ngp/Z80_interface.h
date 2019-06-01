@@ -30,6 +30,4 @@ void Z80_SetEnable(bool set);
 bool Z80_IsEnabled(void);
 int Z80_RunOP(void);
 
-int MDFNNGPCZ80_StateAction(void *data, int load, int data_only);
-
 #endif

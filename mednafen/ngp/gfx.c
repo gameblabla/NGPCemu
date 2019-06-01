@@ -218,8 +218,6 @@ static void draw_scanline_colour(ngpgfx_t *gfx, uint16_t *cfb_scanline,
 		if (gfx->negative)
          data16 = ~data16;
 
-      data16 = data16;
-		
       x    = gfx->winx;
       scan = &cfb_scanline[x];
 
@@ -255,11 +253,11 @@ static void draw_scanline_colour(ngpgfx_t *gfx, uint16_t *cfb_scanline,
 			uint8_t sy       = gfx->SpriteVRAM[(spr * 4) + 3];	/* Y position */
 			int16_t x        = sx;
 			int16_t y        = sy;
-         uint16_t *ptr16  = (uint16_t*)(gfx->SpriteVRAM + (spr * 4));
+			uint16_t *ptr16  = (uint16_t*)(gfx->SpriteVRAM + (spr * 4));
 #ifdef MSB_FIRST
 			uint16_t data16  = LoadU16_RBO(ptr16);
 #else
-         uint16_t data16  = *ptr16;
+			uint16_t data16  = *ptr16;
 #endif
 			uint8_t priority = (data16 & 0x1800) >> 11;
 

@@ -27,7 +27,7 @@ static bool Z80Enabled;
 
 void NGP_Z80SaveState(uint_fast8_t load, FILE* fp)
 {
-	uint8_t r_register;
+	uint8_t r_register = 0;
 	
 	/* Load state */
 	if (load == 1)
