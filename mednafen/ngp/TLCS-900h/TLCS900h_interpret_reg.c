@@ -131,13 +131,13 @@ void regNEG()
 void regMULi()
 {
 	uint8 target = get_rr_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
-#ifdef NEOPOP_DEBUG
 		instruction_error("reg: MULi bad \'rr\' dst code");
-#endif
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -152,11 +152,13 @@ void regMULi()
 void regMULSi()
 {
 	uint8 target = get_rr_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("reg: MULSi bad \'rr\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -171,11 +173,13 @@ void regMULSi()
 void regDIVi()
 {
 	uint8 target = get_rr_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("reg: DIVi bad \'rr\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -193,11 +197,13 @@ void regDIVi()
 void regDIVSi()
 {
 	uint8 target = get_rr_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("reg: DIVSi bad \'rr\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -828,11 +834,13 @@ void regMDEC4()
 void regMUL()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("reg: MUL bad \'RR\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -847,12 +855,13 @@ void regMUL()
 void regMULS()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("reg: MUL bad \'RR\' dst code");
 		return;
 	}
-
+#endif
 	switch(size)
 	{
 	case 0: rCodeW(target) = (int8)(rCodeW(target) & 0xFF) * (int8)rCodeB(rCode);	
@@ -866,12 +875,13 @@ void regMULS()
 void regDIV()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("reg: DIV bad \'RR\' dst code");
 		return;
 	}
-
+#endif
 	switch(size)
 	{
 	case 0: {	rCodeW(target) =  generic_DIV_B(rCodeW(target), rCodeB(rCode));
@@ -888,12 +898,13 @@ void regDIV()
 void regDIVS()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("reg: DIVS bad \'RR\' dst code");
 		return;
 	}
-
+#endif
 	switch(size)
 	{
 	case 0: {	rCodeW(target) = generic_DIVS_B(rCodeW(target), rCodeB(rCode));

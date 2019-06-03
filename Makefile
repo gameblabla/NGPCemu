@@ -22,7 +22,7 @@ DEFINES		= -DLSB_FIRST -DINLINE="inline" -DWANT_16BPP -DFRONTEND_SUPPORTS_RGB565
 DEFINES		+= -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.31\" -DPACKAGE=\"mednafen\" -DMEDNAFEN_VERSION_NUMERIC=931 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DSTDC_HEADERS -D__STDC_LIMIT_MACROS -D_LOW_ACCURACY_
 DEFINES		+= -DGIT_VERSION=\"$(GIT_VERSION)\"
 
-CFLAGS		= -Ofast -march=native -g -fno-common -Wall $(INCLUDES) $(DEFINES)
+CFLAGS		= -Ofast -march=native -fprofile-use -fno-common -Wall $(INCLUDES) $(DEFINES)
 CXXFLAGS	= $(CFLAGS) -nostdinc++ -fno-rtti -fno-exceptions -std=gnu++11
 LDFLAGS     = -lc -lgcc -lm -lSDL -lz
 

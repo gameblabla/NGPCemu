@@ -411,7 +411,11 @@ void sngSWI()
 	case 5: set_interrupt(2, true); break;  //SWI 5
 	case 6: set_interrupt(3, true); break;  //SWI 6
 
-	default: instruction_error("SWI %d is not valid.", first & 7); break;
+	default:
+	#ifdef TLCS_ERRORS
+		instruction_error("SWI %d is not valid.", first & 7);
+	#endif
+	break;
 	}
 }
 //=============================================================================

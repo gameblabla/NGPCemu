@@ -811,7 +811,9 @@ static void (*decodeExtra[256])() =
 
 static void e(void)
 {
-	instruction_error("Unknown instruction %02X", first);
+	#ifdef TLCS_ERRORS
+		instruction_error("Unknown instruction %02X", first);
+	#endif
 }
 
 static void es(void)

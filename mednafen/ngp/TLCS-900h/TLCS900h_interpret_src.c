@@ -542,11 +542,13 @@ void srcCPi()
 void srcMUL()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("src: MUL bad \'RR\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -561,11 +563,13 @@ void srcMUL()
 void srcMULS()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("src: MUL bad \'RR\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -580,11 +584,13 @@ void srcMULS()
 void srcDIV()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("src: DIV bad \'RR\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
@@ -602,11 +608,13 @@ void srcDIV()
 void srcDIVS()
 {
 	uint8 target = get_RR_Target();
+#ifdef TLCS_ERRORS
 	if (target == 0x80)
 	{
 		instruction_error("src: DIVS bad \'RR\' dst code");
 		return;
 	}
+#endif
 
 	switch(size)
 	{
