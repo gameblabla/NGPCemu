@@ -12,9 +12,9 @@
 //	additional informations.
 //---------------------------------------------------------------------------
 
-#include <SDL/SDL.h>
 #include <libgen.h>
 #include <stdint.h>
+#include <sys/time.h>
 
 #include "mednafen/ngp/neopop.h"
 #include "mednafen/general.h"
