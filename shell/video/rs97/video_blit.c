@@ -41,7 +41,11 @@ void Init_Video()
 	
 	SDL_ShowCursor(0);
 	
-	sdl_screen = SDL_SetVideoMode(320, 240, 16, SDL_HWSURFACE);
+	sdl_screen = SDL_SetVideoMode(320, 240, 16, SDL_HWSURFACE
+	#ifdef SDL_TRIPLEBUF
+	| SDL_TRIPLEBUF
+	#endif
+	);
 	
 	backbuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, 0,0,0,0);
 	
