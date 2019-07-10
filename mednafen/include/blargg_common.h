@@ -48,7 +48,9 @@ public:
 	void clear() { void* p = begin_; begin_ = 0; size_ = 0; free( p ); }
 	T& operator [] ( size_t n ) const
 	{
+#ifndef NDEBUG
 		assert( n <= size_ ); // <= to allow past-the-end value
+#endif
 		return begin_ [n];
 	}
 };

@@ -131,8 +131,13 @@ private:
 	#include "config.h"
 #endif
 
+#ifdef BLIP_LOW_QUALITY
+#define BLIP_BUFFER_ACCURACY 16
+#define BLIP_PHASE_BITS 16
+#else
 #define BLIP_BUFFER_ACCURACY 32
 #define BLIP_PHASE_BITS 8
+#endif
 
 // Number of bits in resample ratio fraction. Higher values give a more accurate ratio
 // but reduce maximum buffer size.
@@ -288,11 +293,6 @@ int const blip_reader_default_bass = 9;
 	(void) ((blip_buffer).reader_accum_ = name##_reader_accum)
 
 
-// Compatibility with older version
-const long blip_unscaled = 65535;
-const int blip_low_quality  = blip_med_quality;
-const int blip_best_quality = blip_high_quality;
-
 // Deprecated; use BLIP_READER macros as follows:
 // Blip_Reader r; r.begin( buf ); -> BLIP_READER_BEGIN( r, buf );
 // int bass = r.begin( buf )      -> BLIP_READER_BEGIN( r, buf ); int bass = BLIP_READER_BASS( buf );
@@ -324,7 +324,9 @@ blip_inline void Blip_Synth<quality,range>::offset_resampled( blip_resampled_tim
 {
 	// Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
 	// need for a longer buffer as set by set_sample_rate().
+#ifndef NDEBUG
 	assert( (blip_long) (time >> BLIP_BUFFER_ACCURACY) < blip_buf->buffer_size_ );
+#endif
 	delta *= impl.delta_factor;
 	blip_long* BLIP_RESTRICT buf = blip_buf->buffer_ + (time >> BLIP_BUFFER_ACCURACY);
 	int phase = (int) (time >> (BLIP_BUFFER_ACCURACY - BLIP_PHASE_BITS) & (blip_res - 1));

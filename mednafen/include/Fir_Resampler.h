@@ -78,7 +78,9 @@ protected:
 // better quality and rolloff effectiveness, and take longer to calculate.
 template<int width>
 class Fir_Resampler : public Fir_Resampler_ {
+#ifndef NDEBUG
 	BOOST_STATIC_ASSERT( width >= 4 && width % 2 == 0 );
+#endif
 	short impulses [max_res] [width];
 public:
 	Fir_Resampler() : Fir_Resampler_( width, impulses [0] ) { }
@@ -95,7 +97,9 @@ public:
 inline void Fir_Resampler_::write( long count )
 {
 	write_pos += count;
+#ifndef NDEBUG
 	assert( write_pos <= buf.end() );
+#endif
 }
 
 template<int width>

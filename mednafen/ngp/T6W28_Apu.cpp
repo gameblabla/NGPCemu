@@ -233,8 +233,10 @@ void T6W28_Apu::treble_eq( const blip_eq_t& eq )
 
 void T6W28_Apu::osc_output( int index, Blip_Buffer* center, Blip_Buffer* left, Blip_Buffer* right )
 {
+#ifndef NDEBUG
 	require( (unsigned) index < osc_count );
 	require( (center && left && right) || (!center && !left && !right) );
+#endif
 	T6W28_Osc& osc = *oscs [index];
 	osc.outputs [1] = right;
 	osc.outputs [2] = left;
@@ -263,7 +265,9 @@ void T6W28_Apu::reset()
 void T6W28_Apu::run_until( sms_time_t end_time )
 {
    uint_fast8_t i;
+#ifndef NDEBUG
    require( end_time >= last_time ); // end_time must not be before previous time
+#endif
 
    if ( end_time > last_time )
    {
@@ -301,8 +305,9 @@ static const unsigned char volumes [16] = {
 
 void T6W28_Apu::write_data_left( sms_time_t time, int data )
 {
+#ifndef NDEBUG
    require( (unsigned) data <= 0xFF );
-
+#endif
    run_until( time );
 
    if ( data & 0x80 )
@@ -326,8 +331,9 @@ void T6W28_Apu::write_data_left( sms_time_t time, int data )
 
 void T6W28_Apu::write_data_right( sms_time_t time, int data )
 {
+#ifndef NDEBUG
    require( (unsigned) data <= 0xFF );
-
+#endif
    run_until( time );
 
    if ( data & 0x80 )
