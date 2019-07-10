@@ -1,10 +1,13 @@
 #include <portaudio.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <portaudio.h>
 
 #include "sound_output.h"
 
 static PaStream *apu_stream;
+
+//#define CALLBACK_AUDIO 1
 
 #ifdef CALLBACK_AUDIO
 #include "mednafen/git.h"
@@ -52,7 +55,7 @@ uint32_t Audio_Init()
 	outputParameters.hostApiSpecificStreamInfo = NULL;
 	
 #ifdef CALLBACK_AUDIO
-	Pa_OpenStream( &apu_stream, NULL, &outputParameters, SOUND_OUTPUT_FREQUENCY, 1024, paNoFlag, patestCallback, NULL);
+	Pa_OpenStream( &apu_stream, NULL, &outputParameters, SOUND_OUTPUT_FREQUENCY*2, SOUND_SAMPLES_SIZE, paNoFlag, patestCallback, NULL);
 #else
 	Pa_OpenStream( &apu_stream, NULL, &outputParameters, SOUND_OUTPUT_FREQUENCY, 1024, paNoFlag, NULL, NULL);
 #endif
