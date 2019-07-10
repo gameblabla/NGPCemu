@@ -13,7 +13,12 @@ static Stereo_Buffer buf;
 static uint8_t LastDACLeft = 0, LastDACRight = 0;
 static uint8_t CurrentDACLeft = 0, CurrentDACRight = 0;
 
+#ifdef BLIP_LOW_QUALITY
+typedef Blip_Synth<blip_med_quality, 0xFF> Synth;
+#else
 typedef Blip_Synth<blip_good_quality, 0xFF> Synth;
+#endif
+
 static Synth synth;
 static bool schipenable = 0;
 
