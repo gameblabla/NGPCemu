@@ -203,43 +203,41 @@ uint8_t lastpoof = 0;
 
 uint8_t loadB(uint32 address)
 {
-   uint8_t *ptr;
-   address &= 0xFFFFFF;
+	uint8_t *ptr;
+	address &= 0xFFFFFF;
 
-   if(FastReadMap[address >> 16])
-      return(FastReadMap[address >> 16][address]);
+	if (FastReadMap[address >> 16])
+		return(FastReadMap[address >> 16][address]);
 
-   ptr = (uint8_t*)translate_address_read(address);
+	ptr = (uint8_t*)translate_address_read(address);
 
-   if (ptr)
-      return *ptr;
+	if (ptr)
+		return *ptr;
 
-   if(address >= 0x8000 && address <= 0xbfff)
-      return(ngpgfx_read8(NGPGfx, address));
+	switch (address)
+	{
+		case 0x20 ... 0x29:
+			return(timer_read8(address));
+		case 0x70 ... 0x7F:
+			return(int_read8(address));
+		case 0x90 ... 0x97:
+			 return(rtc_read8(address));
+		break;
+		case 0x50:
+			return(SC0BUF);
+		case 0xBC:
+			return Z80_ReadComm();
+		default:
+			if(address >= 0x8000 && address <= 0xbfff)
+				return(ngpgfx_read8(NGPGfx, address));
+			else if(address >= 0x4000 && address <= 0x7fff)
+				return(*(uint8_t *)(CPUExRAM + address - 0x4000));
+		break;
+	}
 
-   if(address >= 0x4000 && address <= 0x7fff)
-      return(*(uint8_t *)(CPUExRAM + address - 0x4000));
+	//printf("UNK B R: %08x\n", address);
 
-   if(address >= 0x70 && address <= 0x7F)
-      return(int_read8(address));
-
-   if(address >= 0x90 && address <= 0x97)
-      return(rtc_read8(address));
-
-   if(address >= 0x20 && address <= 0x29)
-      return(timer_read8(address));
-
-   switch (address)
-   {
-      case 0x50:
-         return(SC0BUF);
-      case 0xBC:
-         return Z80_ReadComm();
-   }
-
-   //printf("UNK B R: %08x\n", address);
-
-   return 0;
+	return 0;
 }
 
 uint16_t loadW(uint32 address)
@@ -309,80 +307,71 @@ uint32 loadL(uint32 address)
 
 void storeB(uint32 address, uint8_t data)
 {
-   address &= 0xFFFFFF;
+	address &= 0xFFFFFF;
 
-   if(address < 0x80)
-      lastpoof = data;
+	if (address < 0x80)
+		lastpoof = data;
 
-   if(address >= 0x8000 && address <= 0xbfff)
-   {
-      ngpgfx_write8(NGPGfx, address, data);
-      return;
-   }
+	switch (address)
+	{
+		case 0x20 ... 0x29:
+			timer_write8(address, data);
+		return;
+		case 0x50:
+			SC0BUF = data;
+		return;
+		case 0x6f: /* Watchdog timer */
+		return;
+		case 0x70 ... 0x7F:
+			int_write8(address, data);
+		return;
+		case 0xb2: /* Comm */
+			COMMStatus = data & 1;
+		return;
+		case 0xb9:
+			if(data == 0x55)
+				Z80_SetEnable(1);
+			else if(data == 0xAA)
+				Z80_SetEnable(0);
+		return;
+		case 0xb8:
+			if(data == 0x55)
+				MDFNNGPCSOUND_SetEnable(1);
+			else if(data == 0xAA)
+				MDFNNGPCSOUND_SetEnable(0);
+		return;
+		case 0xBA:
+			Z80_nmi();
+		return;
+		case 0xBC:
+			Z80_WriteComm(data);
+		return;
+		// if(address >= 0xa0 && address <= 0xA3)
+		case 0xA0:
+			if(!Z80_IsEnabled()) Write_SoundChipRight(data);
+		return;
+		case 0xA1:
+			if(!Z80_IsEnabled()) Write_SoundChipLeft(data);
+		return;
+		case 0xA2:
+			dac_write_left(data);
+		return;
+		case 0xA3:
+			dac_write_right(data);
+		return;
+	}
 
-   if(address >= 0x4000 && address <= 0x7fff)
-   {
-      *(uint8_t *)(CPUExRAM + address - 0x4000) = data;
-      return;
-   }
-   if(address >= 0x70 && address <= 0x7F)
-   {
-      int_write8(address, data);
-      return;
-   }
-   if(address >= 0x20 && address <= 0x29)
-   {
-      timer_write8(address, data);
-      return;
-   }
-
-   switch (address)
-   {
-      case 0x50:
-         SC0BUF = data;
-         return;
-      case 0x6f: /* Watchdog timer */
-         return;
-      case 0xb2: /* Comm */
-         COMMStatus = data & 1;
-         return;
-      case 0xb9:
-         if(data == 0x55)
-            Z80_SetEnable(1);
-         else if(data == 0xAA)
-            Z80_SetEnable(0);
-         return;
-      case 0xb8:
-         if(data == 0x55)
-            MDFNNGPCSOUND_SetEnable(1);
-         else if(data == 0xAA)
-            MDFNNGPCSOUND_SetEnable(0);
-         return;
-      case 0xBA:
-         Z80_nmi();
-         return;
-      case 0xBC:
-         Z80_WriteComm(data);
-         return;
-   }
-
-   if(address >= 0xa0 && address <= 0xA3)
-   {
-      if(!Z80_IsEnabled())
-      {
-         if (address == 0xA1)
-            Write_SoundChipLeft(data);
-         else if (address == 0xA0)
-            Write_SoundChipRight(data);
-      } 
-      //DAC Write
-      if (address == 0xA2)
-         dac_write_left(data);
-      else if (address == 0xA3)
-         dac_write_right(data);
-      return;
-   }
-
+	if (address >= 0x8000 && address <= 0xbfff)
+	{
+		ngpgfx_write8(NGPGfx, address, data);
+		return;
+	}
+	else if (address >= 0x4000 && address <= 0x7fff)
+	{
+		*(uint8_t *)(CPUExRAM + address - 0x4000) = data;
+		return;
+	}
+   
    uint8_t* ptr = (uint8_t*)translate_address_write(address);
 
    /* Write */
