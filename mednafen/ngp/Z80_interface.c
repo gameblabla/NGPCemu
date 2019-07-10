@@ -64,66 +64,54 @@ void NGP_Z80SaveState(uint_fast8_t load, FILE* fp)
 
 uint8_t Z80_ReadComm(void)
 {
-   return CommByte;
+	return CommByte;
 }
 
 void Z80_WriteComm(uint8_t data)
 {
-   CommByte = data;
+	CommByte = data;
 }
 
 static uint8_t NGP_z80_readbyte(uint16_t address)
 {
-   if (address <= 0xFFF)
-      return loadB(0x7000 + address);
-
-   switch (address)
-   {
-      case 0x8000:
-         return CommByte;
-      default:
-         break;
-   }
-
-   return 0;
+	switch (address)
+	{
+		case 0x8000:
+			return CommByte;
+		//  if (address <= 0x0FFF)
+		default:
+			return loadB(0x7000 + address);
+	}
+	return 0;
 }
 
 static void NGP_z80_writebyte(uint16_t address, uint8_t value)
 {
-   if (address <= 0x0FFF)
-   {
-      storeB(0x7000 + address, value);
-      return;
-   }
-
-   switch (address)
-   {
-      case 0x8000:
-         CommByte = value;
-         break;
-      case 0x4001:
-         Write_SoundChipLeft(value);
-         break;
-      case 0x4000:
-         Write_SoundChipRight(value);
-         break;
-      case 0xC000:
-         TestIntHDMA(6, 0x0C);
-         break;
-   }
-
+	switch (address)
+	{
+		case 0x8000:
+			CommByte = value;
+		break;
+		case 0x4001:
+			Write_SoundChipLeft(value);
+		break;
+		case 0x4000:
+			Write_SoundChipRight(value);
+		break;
+		case 0xC000:
+			TestIntHDMA(6, 0x0C);
+		break;
+		// if (address <= 0x0FFF)
+		default:
+			storeB(0x7000 + address, value);
+		break;
+	}
 }
 
 static void NGP_z80_writeport(uint16_t port, uint8_t value)
 {
 	//printf("Portout: %04x %02x\n", port, value);
 	z80_set_interrupt(0);
-}
-
-static uint8_t NGP_z80_readport(uint16_t port)
-{
-	//printf("Portin: %04x\n", port);
-	return 0;
 }
 
 void Z80_nmi(void)
@@ -143,7 +131,6 @@ void Z80_reset(void)
 	z80_writebyte = NGP_z80_writebyte;
 	z80_readbyte = NGP_z80_readbyte;
 	z80_writeport = NGP_z80_writeport;
-	z80_readport = NGP_z80_readport;
 
 	z80_init();
 	z80_reset();
