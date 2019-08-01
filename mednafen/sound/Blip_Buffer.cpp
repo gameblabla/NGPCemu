@@ -190,7 +190,11 @@ void Blip_Synth_Fast_::volume_unit( double new_unit )
 	delta_factor = int (new_unit * (1L << blip_sample_bits) + 0.5);
 }
 
-long Blip_Buffer::read_samples( blip_sample_t* BLIP_RESTRICT out, long max_samples, int stereo )
+long Blip_Buffer::read_samples( blip_sample_t* BLIP_RESTRICT out, long max_samples
+#ifndef WANT_STEREO_SOUND
+, int stereo 
+#endif
+)
 {
 	long count = samples_avail();
 	if ( count > max_samples )
