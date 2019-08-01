@@ -562,7 +562,7 @@ void reset_memory(void)
 	storeB(0x6F86, 0x00);	/* No user answer (?) */
 
 	/* Language: 0 = Japanese, 1 = English */
-	storeB(0x6F87, MDFN_GetSettingB("ngp.language"));
+	storeB(0x6F87, setting_ngp_language);
 
 	/* Color Mode Selection: 0x00 = B&W, 0x10 = Colour */
 	storeB(0x6F91, rom_header->mode);
