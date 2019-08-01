@@ -2,7 +2,7 @@
 
 void (*z80_writebyte)(uint16_t a, uint8_t b);
 uint8_t (*z80_readbyte)(uint16_t a);
-void (*z80_writeport)(uint16_t a, uint8_t b);
+void (*z80_writeport)(/*uint16_t a, uint8_t b*/);
 
 /* This is what everything acts on! */
 struct processor z80;

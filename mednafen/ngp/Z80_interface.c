@@ -108,7 +108,7 @@ static void NGP_z80_writebyte(uint16_t address, uint8_t value)
 	}
 }
 
-static void NGP_z80_writeport(uint16_t port, uint8_t value)
+static void NGP_z80_writeport(/*uint16_t port, uint8_t value*/)
 {
 	//printf("Portout: %04x %02x\n", port, value);
 	z80_set_interrupt(0);

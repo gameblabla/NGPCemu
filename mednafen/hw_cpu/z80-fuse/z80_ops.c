@@ -1783,7 +1783,7 @@ int z80_do_opcode( void )
          { 
             uint16 outtemp;
             outtemp = Z80_RB_MACRO( PC++ ) + ( A << 8 );
-            Z80_WP_MACRO( outtemp, A );
+            Z80_WP_MACRO( /*outtemp, A*/ );
          }
          break;
       case 0xd4:		/* CALL NC,nnnn */
@@ -1830,7 +1830,7 @@ int z80_do_opcode( void )
          { 
             uint16 intemp;
             intemp = Z80_RB_MACRO( PC++ ) + ( A << 8 );
-            A=Z80_RP_MACRO( intemp );
+            A=Z80_RP_MACRO();
          }
          break;
       case 0xdc:		/* CALL C,nnnn */
@@ -1953,7 +1953,7 @@ int z80_do_opcode( void )
                   Z80_IN( B, BC );
                   break;
                case 0x41:		/* OUT (C),B */
-                  Z80_WP_MACRO( BC, B );
+                  Z80_WP_MACRO( /*BC, B*/ );
                   break;
                case 0x42:		/* SBC HL,BC */
                   contend_read_no_mreq( IR, 1 );
@@ -2006,7 +2006,7 @@ int z80_do_opcode( void )
                   Z80_IN( C, BC );
                   break;
                case 0x49:		/* OUT (C),C */
-                  Z80_WP_MACRO( BC, C );
+                  Z80_WP_MACRO( /*BC, C*/ );
                   break;
                case 0x4a:		/* ADC HL,BC */
                   contend_read_no_mreq( IR, 1 );
@@ -2028,7 +2028,7 @@ int z80_do_opcode( void )
                   Z80_IN( D, BC );
                   break;
                case 0x51:		/* OUT (C),D */
-                  Z80_WP_MACRO( BC, D );
+                  Z80_WP_MACRO( /*BC, D*/ );
                   break;
                case 0x52:		/* SBC HL,DE */
                   contend_read_no_mreq( IR, 1 );
@@ -2055,7 +2055,7 @@ int z80_do_opcode( void )
                   Z80_IN( E, BC );
                   break;
                case 0x59:		/* OUT (C),E */
-                  Z80_WP_MACRO( BC, E );
+                  Z80_WP_MACRO( /*BC, E*/ );
                   break;
                case 0x5a:		/* ADC HL,DE */
                   contend_read_no_mreq( IR, 1 );
@@ -2082,7 +2082,7 @@ int z80_do_opcode( void )
                   Z80_IN( H, BC );
                   break;
                case 0x61:		/* OUT (C),H */
-                  Z80_WP_MACRO( BC, H );
+                  Z80_WP_MACRO( /*BC, H*/ );
                   break;
                case 0x62:		/* SBC HL,HL */
                   contend_read_no_mreq( IR, 1 );
@@ -2110,7 +2110,7 @@ int z80_do_opcode( void )
                   Z80_IN( L, BC );
                   break;
                case 0x69:		/* OUT (C),L */
-                  Z80_WP_MACRO( BC, L );
+                  Z80_WP_MACRO( /*BC, L*/ );
                   break;
                case 0x6a:		/* ADC HL,HL */
                   contend_read_no_mreq( IR, 1 );
@@ -2141,7 +2141,7 @@ int z80_do_opcode( void )
                   }
                   break;
                case 0x71:		/* OUT (C),0 */
-                  Z80_WP_MACRO( BC, 0 );
+                  Z80_WP_MACRO( /*BC, 0*/ );
                   break;
                case 0x72:		/* SBC HL,SP */
                   contend_read_no_mreq( IR, 1 );
@@ -2159,7 +2159,7 @@ int z80_do_opcode( void )
                   Z80_IN( A, BC );
                   break;
                case 0x79:		/* OUT (C),A */
-                  Z80_WP_MACRO( BC, A );
+                  Z80_WP_MACRO( /*BC, A*/ );
                   break;
                case 0x7a:		/* ADC HL,SP */
                   contend_read_no_mreq( IR, 1 );
@@ -2225,7 +2225,7 @@ int z80_do_opcode( void )
                      contend_read_no_mreq( IR, 1 );
                      outitemp = Z80_RB_MACRO( HL );
                      B--;	/* This does happen first, despite what the specs say */
-                     Z80_WP_MACRO(BC,outitemp);
+                     Z80_WP_MACRO(/*BC,outitemp*/);
 
                      HL++;
                      outitemp2 = outitemp + L;
@@ -2287,7 +2287,7 @@ int z80_do_opcode( void )
                      contend_read_no_mreq( IR, 1 );
                      outitemp = Z80_RB_MACRO( HL );
                      B--;	/* This does happen first, despite what the specs say */
-                     Z80_WP_MACRO(BC,outitemp);
+                     Z80_WP_MACRO(/*BC,outitemp*/);
 
                      HL--;
                      outitemp2 = outitemp + L;
@@ -2370,7 +2370,7 @@ int z80_do_opcode( void )
                      contend_read_no_mreq( IR, 1 );
                      outitemp = Z80_RB_MACRO( HL );
                      B--;	/* This does happen first, despite what the specs say */
-                     Z80_WP_MACRO(BC,outitemp);
+                     Z80_WP_MACRO(/*BC,outitemp*/);
 
                      HL++;
                      outitemp2 = outitemp + L;
@@ -2460,7 +2460,7 @@ int z80_do_opcode( void )
                      contend_read_no_mreq( IR, 1 );
                      outitemp = Z80_RB_MACRO( HL );
                      B--;	/* This does happen first, despite what the specs say */
-                     Z80_WP_MACRO(BC,outitemp);
+                     Z80_WP_MACRO(/*BC,outitemp*/);
 
                      HL--;
                      outitemp2 = outitemp + L;

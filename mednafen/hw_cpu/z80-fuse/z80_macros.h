@@ -225,7 +225,7 @@ break
 
 #define Z80_IN( reg, port )\
 {\
-  (reg)=Z80_RP_MACRO((port));\
+  (reg)=Z80_RP_MACRO();\
   F = ( F & Z80_FLAG_C) | sz53p_table[(reg)];\
 }
 

@@ -56,7 +56,8 @@ extern uint8_t sz53p_table[0x100]; /* OR the above two tables together */
 extern uint64_t z80_tstates;
 extern void (*z80_writebyte)(uint16_t a, uint8_t b);
 extern uint8_t (*z80_readbyte)(uint16_t a);
-extern void (*z80_writeport)(uint16_t a, uint8_t b);
+/* Comment out variables parameters given that they are not being used */
+extern void (*z80_writeport)(/*uint16_t a, uint8_t b*/);
 
 void z80_enable_interrupts( void );
 
@@ -72,10 +73,10 @@ static INLINE void Z80_WB_MACRO(uint16_t A, uint8_t V)
 }
 
 // Write port
-static INLINE void Z80_WP_MACRO(uint16_t A, uint8_t V)
+static INLINE void Z80_WP_MACRO(/*uint16_t A, uint8_t V*/)
 { 
 	z80_tstates += 4; 
-	z80_writeport(A, V); 
+	z80_writeport(/*A, V*/); 
 }
 
 // Read mem
@@ -86,7 +87,7 @@ static INLINE uint8_t Z80_RB_MACRO(uint16_t A)
 }
 
 // Read port
-static INLINE uint8_t Z80_RP_MACRO(uint16_t A)
+static INLINE uint8_t Z80_RP_MACRO()
 { 
 	z80_tstates += 4; 
 	return 0;
