@@ -5,8 +5,8 @@
 
 extern SDL_Surface *sdl_screen, *ngp_vs, *backbuffer;
 
-#define HOST_WIDTH_RESOLUTION (sdl_screen->w)
-#define HOST_HEIGHT_RESOLUTION (sdl_screen->h)
+#define HOST_WIDTH_RESOLUTION (320)
+#define HOST_HEIGHT_RESOLUTION (240)
 
 #define INTERNAL_NGP_WIDTH 160
 #define INTERNAL_NGP_HEIGHT 152
