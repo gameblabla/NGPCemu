@@ -33,7 +33,9 @@ void bitmap_scale(uint32_t startx, uint32_t starty, uint32_t viswidth, uint32_t 
 
 void upscale_160x152_to_320x240(uint32_t* restrict dst, uint32_t* restrict src)
 {
+#ifndef NOAVERAGING
     uint32_t midh = 240 / 2;
+#endif
     uint32_t Eh = 0;
     uint32_t source = 0;
     uint32_t dh = 0;
