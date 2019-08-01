@@ -28,37 +28,12 @@ typedef enum
 #define MDFNSF_REQUIRES_RELOAD	(1 << 24)
 #define MDFNSF_REQUIRES_RESTART	(1 << 25)
 
-typedef struct
-{
-   const char *string;
-   int number;
-   const char *description;
-   const char *description_extra;
-} MDFNSetting_EnumList;
-
-typedef struct
-{
-   const char *name;
-   uint32_t flags;
-   const char *description;
-   const char *description_extra;
-
-   MDFNSettingType type;
-   const char *default_value;
-   const char *minimum;
-   const char *maximum;
-   bool (*validate_func)(const char *name, const char *value);
-   void (*ChangeNotification)(const char *name);
-   const MDFNSetting_EnumList *enum_list;
-} MDFNSetting;
-
 typedef struct __MDFNCS
 {
    char *name;
    char *value;
    char *game_override;    // per-game setting override(netplay_override > game_override > value, in precedence)
 
-   const MDFNSetting *desc;
    void (*ChangeNotification)(const char *name);
    uint32_t name_hash;
 } MDFNCS;

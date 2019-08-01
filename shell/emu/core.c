@@ -225,53 +225,9 @@ void SaveState(const char* path, uint_fast8_t load)
 	fclose(fp);
 }
 
-static const MDFNSetting_EnumList LanguageList[] =
-{
-	{ "japanese", 0, "Japanese" },
-	{ "0", 0 },
-
-	{ "english", 1, "English" },
-	{ "1", 1 },
-
-	{ NULL, 0 },
-};
-
-static MDFNSetting NGPSettings[] =
-{
-	{ "ngp.language", MDFNSF_EMU_STATE | MDFNSF_UNTRUSTED_SAFE, "Language games should display text in.", NULL, MDFNST_ENUM, "english", NULL, NULL, NULL, NULL, LanguageList },
-	{ NULL }
-};
-
-MDFNGI EmulatedNGP = {};
-
-MDFNGI *MDFNGameInfo = &EmulatedNGP;
-
-static void MDFNGI_reset(MDFNGI *gameinfo)
-{
-	gameinfo->Settings = NGPSettings;
-	gameinfo->MasterClock = MDFN_MASTERCLOCK_FIXED(6144000);
-	gameinfo->fps = 0;
-	gameinfo->multires = false; // Multires possible?
-
-	gameinfo->lcm_width = 160;
-	gameinfo->lcm_height = 152;
-
-	gameinfo->nominal_width = 160;
-	gameinfo->nominal_height = 152;
-
-	gameinfo->fb_width = 160;
-	gameinfo->fb_height = 152;
-
-	gameinfo->soundchan = 2;
-}
-
 static void MDFNI_CloseGame(void)
 {
-   if(!MDFNGameInfo)
-      return;
-
    CloseGame();
-   MDFNGI_reset(MDFNGameInfo);
 }
 
 #define FB_WIDTH 160

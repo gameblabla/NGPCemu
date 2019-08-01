@@ -239,8 +239,6 @@ class CDIF;
 
 typedef struct
 {
- const MDFNSetting *Settings;
-
  // Time base for EmulateSpecStruct::MasterCycles
  int64_t MasterClock;
 
