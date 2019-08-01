@@ -305,8 +305,10 @@ void iBIOSHLE(void)
       case 0xFF2C86:
          {
             //Write the byte
+            /*
             uint8 data = rCodeB(0x35);
             system_comms_write(data);
+            */
          }
 
          //Restore $PC after BIOS-HLE instruction
@@ -321,6 +323,7 @@ void iBIOSHLE(void)
          //VECT_COMGETDATA
       case 0xFF2CB4:
          {
+            /*
             uint8 data;
 
             if (system_comms_read(&data))
@@ -337,6 +340,7 @@ void iBIOSHLE(void)
                return;
             }
             else
+            */
             {
                rCodeB(0x30) = 1;	//COM_BUF_EMPTY
             }
@@ -364,8 +368,8 @@ void iBIOSHLE(void)
       case 0xFF2D4E:
 
          // Receive Buffer Count
-         rCodeW(0x30) = system_comms_read(NULL);
-
+         /*rCodeW(0x30) = system_comms_read(NULL);*/
+		 rCodeW(0x30) = 0;
          break;
 
       case VECT_COMCREATEBUFDATA:
@@ -373,11 +377,13 @@ void iBIOSHLE(void)
 
          while(rCodeB(0x35) > 0)
          {
+            /*
             uint8 data;
             data = loadB(rCodeL(0x3C));
 
             //Write data from (XHL3++)
             system_comms_write(data);
+            */
             rCodeL(0x3C)++; //Next data
 
             rCodeB(0x35)--;	//RB3 = Count Left
@@ -388,7 +394,7 @@ void iBIOSHLE(void)
       case VECT_COMGETBUFDATA:
          pc = pop32();
 
-         while(rCodeB(0x35) > 0)
+		 /*while(rCodeB(0x35) > 0)
          {
             uint8 data;
 
@@ -405,7 +411,7 @@ void iBIOSHLE(void)
                return;
             }
             break;
-         }
+         }*/
 
          return;
    }

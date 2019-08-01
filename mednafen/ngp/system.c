@@ -10,6 +10,7 @@
 
 extern char EEPROM_filepath[512];
 
+/*
 uint_fast8_t system_comms_read(uint8_t* buffer)
 {
    return 0;
@@ -23,6 +24,7 @@ uint_fast8_t system_comms_poll(uint8_t* buffer)
 void system_comms_write(uint8_t data)
 {
 }
+*/
 
 uint_fast8_t system_io_flash_read(uint8_t* buffer, uint32_t bufferLength)
 {
