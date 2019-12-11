@@ -139,7 +139,8 @@ void Audio_Close()
 {
 	if (handle)
 	{
-		snd_pcm_drain(handle);
+		snd_pcm_drop(handle);
 		snd_pcm_close(handle);
+		snd_config_update_free_global();
 	}
 }
