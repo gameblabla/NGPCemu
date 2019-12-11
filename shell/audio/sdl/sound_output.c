@@ -100,5 +100,9 @@ void Audio_Close()
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-	buffer = NULL;
+	if (buffer)
+	{
+		free(buffer);
+		buffer = NULL;
+	}
 }

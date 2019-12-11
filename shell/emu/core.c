@@ -160,30 +160,24 @@ void NGP_CPUSaveState(uint_fast8_t load, FILE* fp)
 	if (load == 1)
 	{
 		fread(&z80_runtime, sizeof(uint8_t), sizeof(z80_runtime), fp);
-		fread(&CPUExRAM, sizeof(uint8_t), 16384, fp);
+		fread(&CPUExRAM, sizeof(uint8_t), sizeof(CPUExRAM), fp);
 		fread(&FlashStatusEnable, sizeof(uint8_t), sizeof(FlashStatusEnable), fp);
 		fread(&pc, sizeof(uint8_t), sizeof(pc), fp);
 		fread(&sr, sizeof(uint8_t), sizeof(sr), fp);
 		fread(&f_dash, sizeof(uint8_t), sizeof(f_dash), fp);
 		fread(&gpr, sizeof(uint8_t), sizeof(gpr), fp);
-		fread(&gprBank[0], sizeof(uint8_t), sizeof(gprBank[0]), fp);
-		fread(&gprBank[1], sizeof(uint8_t), sizeof(gprBank[1]), fp);
-		fread(&gprBank[2], sizeof(uint8_t), sizeof(gprBank[2]), fp);
-		fread(&gprBank[3], sizeof(uint8_t), sizeof(gprBank[3]), fp);
+		fread(&gprBank, sizeof(uint8_t), sizeof(gprBank), fp);
 	}
 	else
 	{
 		fwrite(&z80_runtime, sizeof(uint8_t), sizeof(z80_runtime), fp);
-		fwrite(&CPUExRAM, sizeof(uint8_t), 16384, fp);
+		fwrite(&CPUExRAM, sizeof(uint8_t), sizeof(CPUExRAM), fp);
 		fwrite(&FlashStatusEnable, sizeof(uint8_t), sizeof(FlashStatusEnable), fp);
 		fwrite(&pc, sizeof(uint8_t), sizeof(pc), fp);
 		fwrite(&sr, sizeof(uint8_t), sizeof(sr), fp);
 		fwrite(&f_dash, sizeof(uint8_t), sizeof(f_dash), fp);
 		fwrite(&gpr, sizeof(uint8_t), sizeof(gpr), fp);
-		fwrite(&gprBank[0], sizeof(uint8_t), sizeof(gprBank[0]), fp);
-		fwrite(&gprBank[1], sizeof(uint8_t), sizeof(gprBank[1]), fp);
-		fwrite(&gprBank[2], sizeof(uint8_t), sizeof(gprBank[2]), fp);
-		fwrite(&gprBank[3], sizeof(uint8_t), sizeof(gprBank[3]), fp);
+		fwrite(&gprBank, sizeof(uint8_t), sizeof(gprBank), fp);
 	}
 }
 
@@ -363,11 +357,11 @@ int main(int argc, char* argv[])
 	}
 	snprintf(GameName_emu, sizeof(GameName_emu), "%s", basename(argv[1]));
 	
+	Init_Configuration();
+	
 	Init_Video();
 	
 	Audio_Init();
-	
-	Init_Configuration();
 	
 	Load_Game(argv[1]);
 	
@@ -385,7 +379,7 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	Close_Video();
 	Audio_Close();
+	Close_Video();
 	MDFNI_CloseGame();
 }

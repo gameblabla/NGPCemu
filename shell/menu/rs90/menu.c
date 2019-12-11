@@ -325,13 +325,13 @@ void Menu()
 			switch(option.fullscreen)
 			{
 				case 0:
-					print_string("Scaling : Native", TextRed, 0, 5, 105, backbuffer->pixels);
-				break;
-				case 1:
 					print_string("Scaling : Stretched", TextRed, 0, 5, 105, backbuffer->pixels);
 				break;
-				case 2:
+				case 1:
 					print_string("Scaling : Keep scaled", TextRed, 0, 5, 105, backbuffer->pixels);
+				break;
+				case 2:
+					print_string("Scaling : Native", TextRed, 0, 5, 105, backbuffer->pixels);
 				break;
 				case 3:
 					print_string("Scaling : EPX/Scale2x", TextRed, 0, 5, 105, backbuffer->pixels);
@@ -343,13 +343,13 @@ void Menu()
 			switch(option.fullscreen)
 			{
 				case 0:
-					print_string("Scaling : Native", TextWhite, 0, 5, 105, backbuffer->pixels);
-				break;
-				case 1:
 					print_string("Scaling : Stretched", TextWhite, 0, 5, 105, backbuffer->pixels);
 				break;
-				case 2:
+				case 1:
 					print_string("Scaling : Keep scaled", TextWhite, 0, 5, 105, backbuffer->pixels);
+				break;
+				case 2:
+					print_string("Scaling : Native", TextWhite, 0, 5, 105, backbuffer->pixels);
 				break;
 				case 3:
 					print_string("Scaling : EPX/Scale2x", TextWhite, 0, 5, 105, backbuffer->pixels);

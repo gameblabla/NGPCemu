@@ -154,7 +154,7 @@ void do_flash_read(uint8_t *flashdata)
 
 void flash_read(void)
 {
-   FlashFileHeader header;
+   FlashFileHeader header = {0, 0, 0};
    uint8_t* flashdata;
 
    //Initialise the internal flash configuration
