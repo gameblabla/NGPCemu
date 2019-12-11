@@ -49,8 +49,6 @@ uint8_t update_input(void)
 		}
 	}
 	
-	if (axis_joypad[0] > DEADZONE_AXIS)
-	
 	// UP -> DPAD UP
 	if (keys[option.config_buttons[0]] == SDL_PRESSED || axis_joypad[1] < -DEADZONE_AXIS)
 	{
