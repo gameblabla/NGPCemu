@@ -96,9 +96,8 @@ void int_check_pending(void)
        }
    
    #define NGP_IRQ_2(x, y, z) \
-       if (0) {} \
-       else if (z == 0) NGP_IRQ_1(x, IntPrio[y] & 0x07) \
-       else if (z == 1) NGP_IRQ_1(x, (IntPrio[y] & 0x70) >> 4)
+		if (z == 0) NGP_IRQ_1(x, IntPrio[y] & 0x07) \
+		else if (z == 1) NGP_IRQ_1(x, (IntPrio[y] & 0x70) >> 4)
 
 
    uint8_t prio;
