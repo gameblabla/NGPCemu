@@ -29,11 +29,11 @@ extern "C" {
 /* Interrupt prio registers at 0x0070-0x007a don't have priority readable. */
 /* This should probably be stored in BIOS work RAM somewhere instead of a 
  * separate array, but I don't know where! */
-static uint8 CacheIntPrio[0xB]; 
+static uint8_t CacheIntPrio[0xB]; 
 
 void BIOSHLE_Reset(void)
 {
-   int x;
+   uint8_t x;
 
    memset(CacheIntPrio, 0, sizeof(CacheIntPrio));
    CacheIntPrio[0] = 0x02;
@@ -59,7 +59,7 @@ void iBIOSHLE(void)
       return;
 
    pc      --;	    /* Compensate for processing this instruction. */
-   cycles = 8;		/* TODO: Correct cycle counts (or approx?) */
+   cycles_cpu_interpreter = 8;		/* TODO: Correct cycle counts (or approx?) */
 
    switch (pc & 0xffffff)
    {	

@@ -47,7 +47,7 @@
 
 09 SEP 2002 - neopop_uk
 =======================================
-- Extra cycles for addressing modes.
+- Extra cycles_cpu_interpreter for addressing modes.
 
 //---------------------------------------------------------------------------
 */
@@ -68,48 +68,48 @@ void (*instruction_error)(const char* vaMessage,...) = DUMMY_instruction_error;
 
 //=========================================================================
 
-uint32	mem;		//Result of addressing mode
-int		size;		//operand size, 0 = Byte, 1 = Word, 2 = Long
+uint32_t	mem;		//Result of addressing mode
+uint_fast8_t	size_cpu_interpreter = 0;		//operand size, 0 = Byte, 1 = Word, 2 = Long
 
-uint8		first;		//The first byte
-uint8		R;			//big R
-uint8		second;		//The second opcode
+uint8_t		first;		//The first byte
+uint8_t		R;			//big R
+uint8_t		second;		//The second opcode
 
 bool	brCode;		//Register code used?
-uint8		rCode;		//The code
+uint8_t		rCode;		//The code
 
-int32		cycles;		//How many state changes?
-int32		cycles_extra;	//How many extra state changes?
+int32_t		cycles_cpu_interpreter;		//How many state changes?
+static int32_t		cycles_extra;	//How many extra state changes?
 
 //=========================================================================
 
-uint16 fetch16(void)
+uint16_t fetch16(void)
 {
-	uint16 a = loadW(pc);
+	uint16_t a = loadW(pc);
 	pc += 2;
 	return a;
 }
 
-uint32 fetch24(void)
+uint32_t fetch24(void)
 {
-	uint32 b, a = loadW(pc);
+	uint32_t b, a = loadW(pc);
 	pc += 2;
 	b = loadB(pc++);
 	return (b << 16) | a;
 }
 
-uint32 fetch32(void)
+uint32_t fetch32(void)
 {
-	uint32 a = loadL(pc);
+	uint32_t a = loadL(pc);
 	pc += 4;
 	return a;
 }
 
 //=============================================================================
 
-void parityB(uint8 value)
+void parityB(uint8_t value)
 {
-	uint8 count = 0, i;
+	uint8_t count = 0, i;
 
 	for (i = 0; i < 8; i++)
 	{
@@ -121,9 +121,9 @@ void parityB(uint8 value)
 	SETFLAG_V((count & 1) == 0);
 }
 
-void parityW(uint16 value)
+void parityW(uint16_t value)
 {
-	uint8 count = 0, i;
+	uint8_t count = 0, i;
 
 	for (i = 0; i < 16; i++)
 	{
@@ -137,48 +137,48 @@ void parityW(uint16 value)
 
 //=========================================================================
 
-void push8(uint8 data)
+void push8(uint8_t data)
 {
    REGXSP -= 1;
    storeB(REGXSP, data);
 }
 
-void push16(uint16 data)
+void push16(uint16_t data)
 {
    REGXSP -= 2;
    storeW(REGXSP, data);
 }
 
-void push32(uint32 data)
+void push32(uint32_t data)
 {
    REGXSP -= 4;
    storeL(REGXSP, data);
 }
 
-uint8 pop8(void)
+uint8_t pop8(void)
 {
-   uint8 temp = loadB(REGXSP);
+   uint8_t temp = loadB(REGXSP);
    REGXSP += 1;
    return temp;
 }
 
-uint16 pop16(void)
+uint16_t pop16(void)
 {
-   uint16 temp = loadW(REGXSP);
+   uint16_t temp = loadW(REGXSP);
    REGXSP += 2;
    return temp;
 }
 
-uint32 pop32(void)
+uint32_t pop32(void)
 {
-   uint32 temp = loadL(REGXSP);
+   uint32_t temp = loadL(REGXSP);
    REGXSP += 4;
    return temp;
 }
 
 //=============================================================================
 
-uint16 generic_DIV_B(uint16 val, uint8 div)
+uint16_t generic_DIV_B(uint16_t val, uint8_t div)
 {
 	if (div == 0)
 	{ 
@@ -187,14 +187,14 @@ uint16 generic_DIV_B(uint16 val, uint8 div)
 	}
 	else
 	{
-		uint16 quo = val / (uint16)div;
-		uint16 rem = val % (uint16)div;
+		uint16_t quo = val / (uint16_t)div;
+		uint16_t rem = val % (uint16_t)div;
 		if (quo > 0xFF) SETFLAG_V1 else SETFLAG_V0
 		return (quo & 0xFF) | ((rem & 0xFF) << 8);
 	}
 }
 
-uint32 generic_DIV_W(uint32 val, uint16 div)
+uint32_t generic_DIV_W(uint32_t val, uint16_t div)
 {
 	if (div == 0)
 	{ 
@@ -203,8 +203,8 @@ uint32 generic_DIV_W(uint32 val, uint16 div)
 	}
 	else
 	{
-		uint32 quo = val / (uint32)div;
-		uint32 rem = val % (uint32)div;
+		uint32_t quo = val / (uint32_t)div;
+		uint32_t rem = val % (uint32_t)div;
 		if (quo > 0xFFFF) SETFLAG_V1 else SETFLAG_V0
 		return (quo & 0xFFFF) | ((rem & 0xFFFF) << 16);
 	}
@@ -212,7 +212,7 @@ uint32 generic_DIV_W(uint32 val, uint16 div)
 
 //=============================================================================
 
-uint16 generic_DIVS_B(int16 val, int8 div)
+uint16_t generic_DIVS_B(int16 val, int8 div)
 {
 	if (div == 0)
 	{
@@ -228,7 +228,7 @@ uint16 generic_DIVS_B(int16 val, int8 div)
 	}
 }
 
-uint32 generic_DIVS_W(int32 val, int16 div)
+uint32_t generic_DIVS_W(int32_t val, int16 div)
 {
 	if (div == 0)
 	{
@@ -237,8 +237,8 @@ uint32 generic_DIVS_W(int32 val, int16 div)
 	}
 	else
 	{
-		int32 quo = val / (int32)div;
-		int32 rem = val % (int32)div;
+		int32_t quo = val / (int32_t)div;
+		int32_t rem = val % (int32_t)div;
 		if (quo > 0xFFFF) SETFLAG_V1 else SETFLAG_V0
 		return (quo & 0xFFFF) | ((rem & 0xFFFF) << 16);
 	}
@@ -246,11 +246,11 @@ uint32 generic_DIVS_W(int32 val, int16 div)
 
 //=============================================================================
 
-uint8 generic_ADD_B(uint8 dst, uint8 src)
+uint8_t generic_ADD_B(uint8_t dst, uint8_t src)
 {
-	uint8 half = (dst & 0xF) + (src & 0xF);
-	uint32 resultC = (uint32)dst + (uint32)src;
-	uint8 result = (uint8)(resultC & 0xFF);
+	uint8_t half = (dst & 0xF) + (src & 0xF);
+	uint32_t resultC = (uint32_t)dst + (uint32_t)src;
+	uint8_t result = (uint8_t)(resultC & 0xFF);
 
 	SETFLAG_S(result & 0x80);
 	SETFLAG_Z(result == 0);
@@ -266,11 +266,11 @@ uint8 generic_ADD_B(uint8 dst, uint8 src)
 	return result;
 }
 
-uint16 generic_ADD_W(uint16 dst, uint16 src)
+uint16_t generic_ADD_W(uint16_t dst, uint16_t src)
 {
-	uint16 half = (dst & 0xF) + (src & 0xF);
-	uint32 resultC = (uint32)dst + (uint32)src;
-	uint16 result = (uint16)(resultC & 0xFFFF);
+	uint16_t half = (dst & 0xF) + (src & 0xF);
+	uint32_t resultC = (uint32_t)dst + (uint32_t)src;
+	uint16_t result = (uint16_t)(resultC & 0xFFFF);
 
 	SETFLAG_S(result & 0x8000);
 	SETFLAG_Z(result == 0);
@@ -286,16 +286,16 @@ uint16 generic_ADD_W(uint16 dst, uint16 src)
 	return result;
 }
 
-uint32 generic_ADD_L(uint32 dst, uint32 src)
+uint32_t generic_ADD_L(uint32_t dst, uint32_t src)
 {
-	uint64 resultC = (uint64)dst + (uint64)src;
-	uint32 result = (uint32)(resultC & 0xFFFFFFFF);
+	uint64_t resultC = (uint64_t)dst + (uint64_t)src;
+	uint32_t result = (uint32_t)(resultC & 0xFFFFFFFF);
 
 	SETFLAG_S(result & 0x80000000);
 	SETFLAG_Z(result == 0);
 
-	if ((((int32)dst >= 0) && ((int32)src >= 0) && ((int32)result < 0)) || 
-		(((int32)dst < 0)  && ((int32)src < 0) && ((int32)result >= 0)))
+	if ((((int32_t)dst >= 0) && ((int32_t)src >= 0) && ((int32_t)result < 0)) || 
+		(((int32_t)dst < 0)  && ((int32_t)src < 0) && ((int32_t)result >= 0)))
 	{SETFLAG_V1} else {SETFLAG_V0}
 	
 	SETFLAG_N0;
@@ -306,11 +306,11 @@ uint32 generic_ADD_L(uint32 dst, uint32 src)
 
 //=============================================================================
 
-uint8 generic_ADC_B(uint8 dst, uint8 src)
+uint8_t generic_ADC_B(uint8_t dst, uint8_t src)
 {
-	uint8 half = (dst & 0xF) + (src & 0xF) + FLAG_C;
-	uint32 resultC = (uint32)dst + (uint32)src + (uint32)FLAG_C;
-	uint8 result = (uint8)(resultC & 0xFF);
+	uint8_t half = (dst & 0xF) + (src & 0xF) + FLAG_C;
+	uint32_t resultC = (uint32_t)dst + (uint32_t)src + (uint32_t)FLAG_C;
+	uint8_t result = (uint8_t)(resultC & 0xFF);
 
 	SETFLAG_S(result & 0x80);
 	SETFLAG_Z(result == 0);
@@ -326,11 +326,11 @@ uint8 generic_ADC_B(uint8 dst, uint8 src)
 	return result;
 }
 
-uint16 generic_ADC_W(uint16 dst, uint16 src)
+uint16_t generic_ADC_W(uint16_t dst, uint16_t src)
 {
-	uint16 half = (dst & 0xF) + (src & 0xF) + FLAG_C;
-	uint32 resultC = (uint32)dst + (uint32)src + (uint32)FLAG_C;
-	uint16 result = (uint16)(resultC & 0xFFFF);
+	uint16_t half = (dst & 0xF) + (src & 0xF) + FLAG_C;
+	uint32_t resultC = (uint32_t)dst + (uint32_t)src + (uint32_t)FLAG_C;
+	uint16_t result = (uint16_t)(resultC & 0xFFFF);
 
 	SETFLAG_S(result & 0x8000);
 	SETFLAG_Z(result == 0);
@@ -346,16 +346,16 @@ uint16 generic_ADC_W(uint16 dst, uint16 src)
 	return result;
 }
 
-uint32 generic_ADC_L(uint32 dst, uint32 src)
+uint32_t generic_ADC_L(uint32_t dst, uint32_t src)
 {
-	uint64 resultC = (uint64)dst + (uint64)src + (uint64)FLAG_C;
-	uint32 result = (uint32)(resultC & 0xFFFFFFFF);
+	uint64_t resultC = (uint64_t)dst + (uint64_t)src + (uint64_t)FLAG_C;
+	uint32_t result = (uint32_t)(resultC & 0xFFFFFFFF);
 
 	SETFLAG_S(result & 0x80000000);
 	SETFLAG_Z(result == 0);
 
-	if ((((int32)dst >= 0) && ((int32)src >= 0) && ((int32)result < 0)) || 
-		(((int32)dst < 0)  && ((int32)src < 0) && ((int32)result >= 0)))
+	if ((((int32_t)dst >= 0) && ((int32_t)src >= 0) && ((int32_t)result < 0)) || 
+		(((int32_t)dst < 0)  && ((int32_t)src < 0) && ((int32_t)result >= 0)))
 	{SETFLAG_V1} else {SETFLAG_V0}
 	
 	SETFLAG_N0;
@@ -366,11 +366,11 @@ uint32 generic_ADC_L(uint32 dst, uint32 src)
 
 //=============================================================================
 
-uint8 generic_SUB_B(uint8 dst, uint8 src)
+uint8_t generic_SUB_B(uint8_t dst, uint8_t src)
 {
-	uint8 half = (dst & 0xF) - (src & 0xF);
-	uint32 resultC = (uint32)dst - (uint32)src;
-	uint8 result = (uint8)(resultC & 0xFF);
+	uint8_t half = (dst & 0xF) - (src & 0xF);
+	uint32_t resultC = (uint32_t)dst - (uint32_t)src;
+	uint8_t result = (uint8_t)(resultC & 0xFF);
 
 	SETFLAG_S(result & 0x80);
 	SETFLAG_Z(result == 0);
@@ -392,11 +392,11 @@ uint8 generic_SUB_B(uint8 dst, uint8 src)
 	return result;
 }
 
-uint16 generic_SUB_W(uint16 dst, uint16 src)
+uint16_t generic_SUB_W(uint16_t dst, uint16_t src)
 {
-	uint16 half = (dst & 0xF) - (src & 0xF);
-	uint32 resultC = (uint32)dst - (uint32)src;
-	uint16 result = (uint16)(resultC & 0xFFFF);
+	uint16_t half = (dst & 0xF) - (src & 0xF);
+	uint32_t resultC = (uint32_t)dst - (uint32_t)src;
+	uint16_t result = (uint16_t)(resultC & 0xFFFF);
 
 	SETFLAG_S(result & 0x8000);
 	SETFLAG_Z(result == 0);
@@ -412,16 +412,16 @@ uint16 generic_SUB_W(uint16 dst, uint16 src)
 	return result;
 }
 
-uint32 generic_SUB_L(uint32 dst, uint32 src)
+uint32_t generic_SUB_L(uint32_t dst, uint32_t src)
 {
-	uint64 resultC = (uint64)dst - (uint64)src;
-	uint32 result = (uint32)(resultC & 0xFFFFFFFF);
+	uint64_t resultC = (uint64_t)dst - (uint64_t)src;
+	uint32_t result = (uint32_t)(resultC & 0xFFFFFFFF);
 
 	SETFLAG_S(result & 0x80000000);
 	SETFLAG_Z(result == 0);
 
-	if ((((int32)dst >= 0) && ((int32)src < 0) && ((int32)result < 0)) ||
-		(((int32)dst < 0) && ((int32)src >= 0) && ((int32)result >= 0)))
+	if ((((int32_t)dst >= 0) && ((int32_t)src < 0) && ((int32_t)result < 0)) ||
+		(((int32_t)dst < 0) && ((int32_t)src >= 0) && ((int32_t)result >= 0)))
 	{SETFLAG_V1} else {SETFLAG_V0}
 	
 	SETFLAG_N1;
@@ -432,11 +432,11 @@ uint32 generic_SUB_L(uint32 dst, uint32 src)
 
 //=============================================================================
 
-uint8 generic_SBC_B(uint8 dst, uint8 src)
+uint8_t generic_SBC_B(uint8_t dst, uint8_t src)
 {
-	uint8 half = (dst & 0xF) - (src & 0xF) - FLAG_C;
-	uint32 resultC = (uint32)dst - (uint32)src - (uint32)FLAG_C;
-	uint8 result = (uint8)(resultC & 0xFF);
+	uint8_t half = (dst & 0xF) - (src & 0xF) - FLAG_C;
+	uint32_t resultC = (uint32_t)dst - (uint32_t)src - (uint32_t)FLAG_C;
+	uint8_t result = (uint8_t)(resultC & 0xFF);
 
 	SETFLAG_S(result & 0x80);
 	SETFLAG_Z(result == 0);
@@ -452,11 +452,11 @@ uint8 generic_SBC_B(uint8 dst, uint8 src)
 	return result;
 }
 
-uint16 generic_SBC_W(uint16 dst, uint16 src)
+uint16_t generic_SBC_W(uint16_t dst, uint16_t src)
 {
-	uint16 half = (dst & 0xF) - (src & 0xF) - FLAG_C;
-	uint32 resultC = (uint32)dst - (uint32)src - (uint32)FLAG_C;
-	uint16 result = (uint16)(resultC & 0xFFFF);
+	uint16_t half = (dst & 0xF) - (src & 0xF) - FLAG_C;
+	uint32_t resultC = (uint32_t)dst - (uint32_t)src - (uint32_t)FLAG_C;
+	uint16_t result = (uint16_t)(resultC & 0xFFFF);
 
 	SETFLAG_S(result & 0x8000);
 	SETFLAG_Z(result == 0);
@@ -472,16 +472,16 @@ uint16 generic_SBC_W(uint16 dst, uint16 src)
 	return result;
 }
 
-uint32 generic_SBC_L(uint32 dst, uint32 src)
+uint32_t generic_SBC_L(uint32_t dst, uint32_t src)
 {
-	uint64 resultC = (uint64)dst - (uint64)src - (uint64)FLAG_C;
-	uint32 result = (uint32)(resultC & 0xFFFFFFFF);
+	uint64_t resultC = (uint64_t)dst - (uint64_t)src - (uint64_t)FLAG_C;
+	uint32_t result = (uint32_t)(resultC & 0xFFFFFFFF);
 
 	SETFLAG_S(result & 0x80000000);
 	SETFLAG_Z(result == 0);
 
-	if ((((int32)dst >= 0) && ((int32)src < 0) && ((int32)result < 0)) ||
-		(((int32)dst < 0) && ((int32)src >= 0) && ((int32)result >= 0)))
+	if ((((int32_t)dst >= 0) && ((int32_t)src < 0) && ((int32_t)result < 0)) ||
+		(((int32_t)dst < 0) && ((int32_t)src >= 0) && ((int32_t)result >= 0)))
 	{SETFLAG_V1} else {SETFLAG_V0}
 	
 	SETFLAG_N1;
@@ -492,7 +492,7 @@ uint32 generic_SBC_L(uint32 dst, uint32 src)
 
 //=============================================================================
 
-bool conditionCode(int cc)
+bool conditionCode(uint_fast8_t cc)
 {
    switch(cc)
    {
@@ -566,86 +566,86 @@ bool conditionCode(int cc)
 
 //=============================================================================
 
-uint8 get_rr_Target(void)
+uint8_t get_rr_Target(void)
 {
-	uint8 target = 0x80;
+	uint8_t target = 0x80;
 
-	if (size == 0 && first == 0xC7)
+	if (size_cpu_interpreter == 0 && first == 0xC7)
 		return rCode;
 
 	//Create a regCode
 	switch(first & 7)
 	{
-	case 0: if (size == 1)	target = 0xE0;	break;
+	case 0: if (size_cpu_interpreter == 1)	target = 0xE0;	break;
 	case 1:	
-		if (size == 0)	target = 0xE0;
-		if (size == 1)	target = 0xE4;
+		if (size_cpu_interpreter == 0)	target = 0xE0;
+		if (size_cpu_interpreter == 1)	target = 0xE4;
 		break;
-	case 2: if (size == 1)	target = 0xE8;	break;
+	case 2: if (size_cpu_interpreter == 1)	target = 0xE8;	break;
 	case 3:
-		if (size == 0)	target = 0xE4;
-		if (size == 1)	target = 0xEC;
+		if (size_cpu_interpreter == 0)	target = 0xE4;
+		if (size_cpu_interpreter == 1)	target = 0xEC;
 		break;
-	case 4: if (size == 1)	target = 0xF0;	break;
+	case 4: if (size_cpu_interpreter == 1)	target = 0xF0;	break;
 	case 5:	
-		if (size == 0)	target = 0xE8;
-		if (size == 1)	target = 0xF4;
+		if (size_cpu_interpreter == 0)	target = 0xE8;
+		if (size_cpu_interpreter == 1)	target = 0xF4;
 		break;
-	case 6: if (size == 1)	target = 0xF8;	break;
+	case 6: if (size_cpu_interpreter == 1)	target = 0xF8;	break;
 	case 7:
-		if (size == 0)	target = 0xEC;
-		if (size == 1)	target = 0xFC;
+		if (size_cpu_interpreter == 0)	target = 0xEC;
+		if (size_cpu_interpreter == 1)	target = 0xFC;
 		break;
 	}
 
 	return target;
 }
 
-uint8 get_RR_Target(void)
+uint8_t get_RR_Target(void)
 {
-   uint8 target = 0x80;
+   uint8_t target = 0x80;
 
    //Create a regCode
    switch(second & 7)
    {
       case 0:
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xE0;
          break;
       case 1:	
-         if (size == 0)
+         if (size_cpu_interpreter == 0)
             target = 0xE0;
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xE4;
          break;
       case 2:
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xE8;
          break;
       case 3:
-         if (size == 0)
+         if (size_cpu_interpreter == 0)
             target = 0xE4;
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xEC;
          break;
       case 4:
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xF0;
          break;
       case 5:	
-         if (size == 0)
+         if (size_cpu_interpreter == 0)
             target = 0xE8;
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xF4;
          break;
       case 6:
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xF8;
          break;
       case 7:
-         if (size == 0)
+         if (size_cpu_interpreter == 0)
             target = 0xEC;
-         if (size == 1)
+         if (size_cpu_interpreter == 1)
             target = 0xFC;
          break;
    }
@@ -693,11 +693,11 @@ static void Ex24(void)
 
 static void ExR32(void)
 {
-	uint8 data = FETCH8;
+	uint8_t data = FETCH8;
 
 	if (data == 0x03)
 	{
-		uint8 rIndex, r32;
+		uint8_t rIndex, r32;
 		r32 = FETCH8;		//r32
 		rIndex = FETCH8;	//r8
 		mem = rCodeL(r32) + (int8)rCodeB(rIndex);
@@ -707,7 +707,7 @@ static void ExR32(void)
 
 	if (data == 0x07)
 	{
-		uint8 rIndex, r32;
+		uint8_t rIndex, r32;
 		r32 = FETCH8;		//r32
 		rIndex = FETCH8;	//r16
 		mem = rCodeL(r32) + (int16)rCodeW(rIndex);
@@ -733,8 +733,8 @@ static void ExR32(void)
 
 static void ExDec()
 {
-	uint8 data = FETCH8;
-	uint8 r32 = data & 0xFC;
+	uint8_t data = FETCH8;
+	uint8_t r32 = data & 0xFC;
 
 	cycles_extra = 3;
 
@@ -748,8 +748,8 @@ static void ExDec()
 
 static void ExInc()
 {
-   uint8 data = FETCH8;
-   uint8 r32 = data & 0xFC;
+   uint8_t data = FETCH8;
+   uint8_t r32 = data & 0xFC;
 
    cycles_extra = 3;
 
@@ -951,7 +951,7 @@ static void src_B()
 {
 	second = FETCH8;			//Get the second opcode
 	R = second & 7;
-	size = 0;					//Byte Size
+	size_cpu_interpreter = 0;					//Byte Size
 
 	(*srcDecode[second])();		//Call
 }
@@ -960,7 +960,7 @@ static void src_W()
 {
 	second = FETCH8;			//Get the second opcode
 	R = second & 7;
-	size = 1;					//Word Size
+	size_cpu_interpreter = 1;					//Word Size
 
 	(*srcDecode[second])();		//Call
 }
@@ -969,7 +969,7 @@ static void src_L()
 {
 	second = FETCH8;			//Get the second opcode
 	R = second & 7;
-	size = 2;					//Long Size
+	size_cpu_interpreter = 2;					//Long Size
 
 	(*srcDecode[second])();		//Call
 }
@@ -982,15 +982,15 @@ static void dst()
 	(*dstDecode[second])();		//Call
 }
 
-static uint8 rCodeConversionB[8] = { 0xE1, 0xE0, 0xE5, 0xE4, 0xE9, 0xE8, 0xED, 0xEC };
-static uint8 rCodeConversionW[8] = { 0xE0, 0xE4, 0xE8, 0xEC, 0xF0, 0xF4, 0xF8, 0xFC };
-static uint8 rCodeConversionL[8] = { 0xE0, 0xE4, 0xE8, 0xEC, 0xF0, 0xF4, 0xF8, 0xFC };
+static uint8_t rCodeConversionB[8] = { 0xE1, 0xE0, 0xE5, 0xE4, 0xE9, 0xE8, 0xED, 0xEC };
+static uint8_t rCodeConversionW[8] = { 0xE0, 0xE4, 0xE8, 0xEC, 0xF0, 0xF4, 0xF8, 0xFC };
+static uint8_t rCodeConversionL[8] = { 0xE0, 0xE4, 0xE8, 0xEC, 0xF0, 0xF4, 0xF8, 0xFC };
 
 static void reg_B(void)
 {
 	second = FETCH8;			//Get the second opcode
 	R = second & 7;
-	size = 0;					//Byte Size
+	size_cpu_interpreter = 0;					//Byte Size
 
 	if (brCode == false)
 	{
@@ -1005,7 +1005,7 @@ static void reg_W(void)
 {
 	second = FETCH8;			//Get the second opcode
 	R = second & 7;
-	size = 1;					//Word Size
+	size_cpu_interpreter = 1;					//Word Size
 
 	if (brCode == false)
 	{
@@ -1020,7 +1020,7 @@ static void reg_L(void)
 {
 	second = FETCH8;			//Get the second opcode
 	R = second & 7;
-	size = 2;					//Long Size
+	size_cpu_interpreter = 2;					//Long Size
 
 	if (brCode == false)
 	{
@@ -1072,7 +1072,7 @@ static void (*decode[256])() =
 
 //=============================================================================
 
-int32 TLCS900h_interpret(void)
+int32_t TLCS900h_interpret(void)
 {
 	brCode = false;
 
@@ -1085,7 +1085,7 @@ int32 TLCS900h_interpret(void)
 
 	(*decode[first])();	//Decode
 
-	return cycles + cycles_extra;
+	return cycles_cpu_interpreter + cycles_extra;
 }
 
 //=============================================================================

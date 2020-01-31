@@ -56,10 +56,8 @@ typedef struct ngpgfx
    uint8_t CONTROL_INT;
    uint8_t SCREEN_PERIOD;
    uint8_t K2GE_MODE;
-
+   uint8_t layer_enable;
    uint16_t ColorMap[4096];
-
-   int layer_enable;
 } ngpgfx_t;
 
 void ngpgfx_set_pixel_format(ngpgfx_t *fx);

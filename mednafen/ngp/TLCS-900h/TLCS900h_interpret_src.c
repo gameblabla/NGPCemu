@@ -74,7 +74,7 @@
 //===== PUSH (mem)
 void srcPUSH(void)
 {
-   switch(size)
+   switch(size_cpu_interpreter)
    {
       case 0:
          push8(loadB(mem));
@@ -83,7 +83,7 @@ void srcPUSH(void)
          push16(loadW(mem));
          break;
    }
-   cycles = 7;
+   cycles_cpu_interpreter = 7;
 }
 
 //===== RLD A,(mem)
@@ -104,7 +104,7 @@ void srcRLD(void)
 	SETFLAG_N0
 	parityB(REGA);
 
-	cycles = 12;
+	cycles_cpu_interpreter = 12;
 }
 
 //===== RRD A,(mem)
@@ -125,7 +125,7 @@ void srcRRD()
 	SETFLAG_N0
 	parityB(REGA);
 
-	cycles = 12;
+	cycles_cpu_interpreter = 12;
 }
 
 //===== LDI
@@ -138,7 +138,7 @@ void srcLDI()
       src = 5/*XIY*/;
    }
 
-   switch(size)
+   switch(size_cpu_interpreter)
    {
       case 0:
          storeB(regL(dst), loadB(regL(src)));
@@ -158,7 +158,7 @@ void srcLDI()
 
    SETFLAG_H0;
    SETFLAG_N0;
-   cycles = 10;
+   cycles_cpu_interpreter = 10;
 }
 
 //===== LDIR
@@ -171,11 +171,11 @@ void srcLDIR()
       src = 5/*XIY*/;
    }
 
-   cycles = 10;
+   cycles_cpu_interpreter = 10;
 
    do
    {
-      switch(size)
+      switch(size_cpu_interpreter)
       {
          case 0:
             if (debug_abort_memory == false)
@@ -194,7 +194,7 @@ void srcLDIR()
       REGBC --;
       SETFLAG_V(REGBC);
 
-      cycles += 14;
+      cycles_cpu_interpreter += 14;
    }
    while (FLAG_V);
 
@@ -208,7 +208,7 @@ void srcLDD()
 	uint8 dst = 2/*XDE*/, src = 3/*XHL*/;
 	if ((first & 0xF) == 5) { dst = 4/*XIX*/; src = 5/*XIY*/; }
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:
 		storeB(regL(dst), loadB(regL(src)));
@@ -228,7 +228,7 @@ void srcLDD()
 
 	SETFLAG_H0;
 	SETFLAG_N0;
-	cycles = 10;
+	cycles_cpu_interpreter = 10;
 }
 
 //===== LDDR
@@ -237,11 +237,11 @@ void srcLDDR()
 	uint8 dst = 2/*XDE*/, src = 3/*XHL*/;
 	if ((first & 0xF) == 5)	{ dst = 4/*XIX*/; src = 5/*XIY*/; }
 
-	cycles = 10;
+	cycles_cpu_interpreter = 10;
 
 	do
 	{
-		switch(size)
+		switch(size_cpu_interpreter)
 		{
 		case 0:
 			if (debug_abort_memory == false)
@@ -261,7 +261,7 @@ void srcLDDR()
 		REGBC --;
 		SETFLAG_V(REGBC);
 
-		cycles += 14;
+		cycles_cpu_interpreter += 14;
 	}
 	while (FLAG_V);
 
@@ -274,7 +274,7 @@ void srcCPI()
 {
 	uint8 R = first & 7;
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: generic_SUB_B(REGA, loadB(regL(R)));
 			regL(R) ++; break;
@@ -286,7 +286,7 @@ void srcCPI()
 	REGBC --;
 	SETFLAG_V(REGBC);
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== CPIR
@@ -294,11 +294,11 @@ void srcCPIR()
 {
 	uint8 R = first & 7;
 
-	cycles = 10;
+	cycles_cpu_interpreter = 10;
 
 	do
 	{
-		switch(size)
+		switch(size_cpu_interpreter)
 		{
 		case 0:	if (debug_abort_memory == false)
 					generic_SUB_B(REGA, loadB(regL(R)));
@@ -312,7 +312,7 @@ void srcCPIR()
 		REGBC --;
 		SETFLAG_V(REGBC);
 
-		cycles += 14;
+		cycles_cpu_interpreter += 14;
 	}
 	while (FLAG_V && (FLAG_Z == false));
 }
@@ -322,7 +322,7 @@ void srcCPD()
 {
 	uint8 R = first & 7;
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	generic_SUB_B(REGA, loadB(regL(R)));
 			regL(R) --;	break;
@@ -334,7 +334,7 @@ void srcCPD()
 	REGBC --;
 	SETFLAG_V(REGBC);
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== CPDR
@@ -342,11 +342,11 @@ void srcCPDR()
 {
 	uint8 R = first & 7;
 
-	cycles = 10;
+	cycles_cpu_interpreter = 10;
 
 	do
 	{
-		switch(size)
+		switch(size_cpu_interpreter)
 		{
 		case 0:	if (debug_abort_memory == false)
 					generic_SUB_B(REGA, loadB(regL(R)));
@@ -360,7 +360,7 @@ void srcCPDR()
 		REGBC --;
 		SETFLAG_V(REGBC);
 
-		cycles += 14;
+		cycles_cpu_interpreter += 14;
 	}
 	while (FLAG_V && (FLAG_Z == false));
 }
@@ -368,30 +368,30 @@ void srcCPDR()
 //===== LD (nn),(mem)
 void srcLD16m()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	storeB(fetch16(), loadB(mem)); break;
 	case 1: storeW(fetch16(), loadW(mem)); break;
 	}
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== LD R,(mem)
 void srcLD()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0: regB(R) = loadB(mem); cycles = 4; break;
-	case 1: regW(R) = loadW(mem); cycles = 4; break;
-	case 2: regL(R) = loadL(mem); cycles = 6; break;
+	case 0: regB(R) = loadB(mem); cycles_cpu_interpreter = 4; break;
+	case 1: regW(R) = loadW(mem); cycles_cpu_interpreter = 4; break;
+	case 2: regL(R) = loadL(mem); cycles_cpu_interpreter = 6; break;
 	}
 }
 
 //===== EX (mem),R
 void srcEX()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 temp = regB(R); 
 				regB(R) = loadB(mem); 
@@ -402,60 +402,60 @@ void srcEX()
 				storeW(mem, temp); break;		}
 	}
 
-	cycles = 6;
+	cycles_cpu_interpreter = 6;
 }
 
 //===== ADD (mem),#
 void srcADDi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_ADD_B(loadB(mem), FETCH8)); cycles = 7;break;
-	case 1:	storeW(mem, generic_ADD_W(loadW(mem), fetch16())); cycles = 8;break;
+	case 0:	storeB(mem, generic_ADD_B(loadB(mem), FETCH8)); cycles_cpu_interpreter = 7;break;
+	case 1:	storeW(mem, generic_ADD_W(loadW(mem), fetch16())); cycles_cpu_interpreter = 8;break;
 	}
 }
 
 //===== ADC (mem),#
 void srcADCi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_ADC_B(loadB(mem), FETCH8)); cycles = 7;break;
-	case 1:	storeW(mem, generic_ADC_W(loadW(mem), fetch16())); cycles = 8;break;
+	case 0:	storeB(mem, generic_ADC_B(loadB(mem), FETCH8)); cycles_cpu_interpreter = 7;break;
+	case 1:	storeW(mem, generic_ADC_W(loadW(mem), fetch16())); cycles_cpu_interpreter = 8;break;
 	}
 }
 
 //===== SUB (mem),#
 void srcSUBi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_SUB_B(loadB(mem), FETCH8)); cycles = 7;break;
-	case 1:	storeW(mem, generic_SUB_W(loadW(mem), fetch16())); cycles = 8;break;
+	case 0:	storeB(mem, generic_SUB_B(loadB(mem), FETCH8)); cycles_cpu_interpreter = 7;break;
+	case 1:	storeW(mem, generic_SUB_W(loadW(mem), fetch16())); cycles_cpu_interpreter = 8;break;
 	}
 }
 
 //===== SBC (mem),#
 void srcSBCi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_SBC_B(loadB(mem), FETCH8)); cycles = 7;break;
-	case 1:	storeW(mem, generic_SBC_W(loadW(mem), fetch16())); cycles = 8;break;
+	case 0:	storeB(mem, generic_SBC_B(loadB(mem), FETCH8)); cycles_cpu_interpreter = 7;break;
+	case 1:	storeW(mem, generic_SBC_W(loadW(mem), fetch16())); cycles_cpu_interpreter = 8;break;
 	}
 }
 
 //===== AND (mem),#
 void srcANDi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: {	uint8 result = loadB(mem) & FETCH8;
 				storeB(mem, result);
 				SETFLAG_S(result & 0x80);
 				SETFLAG_Z(result == 0);
 				parityB(result);
-				cycles = 7;
+				cycles_cpu_interpreter = 7;
 				break; }
 
 	case 1: {	uint16 result = loadW(mem) & fetch16();
@@ -463,7 +463,7 @@ void srcANDi()
 				SETFLAG_S(result & 0x8000);
 				SETFLAG_Z(result == 0);
 				parityW(result);
-				cycles = 8;
+				cycles_cpu_interpreter = 8;
 				break; }
 	}
 
@@ -475,14 +475,14 @@ void srcANDi()
 //===== OR (mem),#
 void srcORi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: {	uint8 result = loadB(mem) | FETCH8;
 				storeB(mem, result);
 				SETFLAG_S(result & 0x80);
 				SETFLAG_Z(result == 0);
 				parityB(result);
-				cycles = 7;
+				cycles_cpu_interpreter = 7;
 				break; }
 
 	case 1: {	uint16 result = loadW(mem) | fetch16();
@@ -490,7 +490,7 @@ void srcORi()
 				SETFLAG_S(result & 0x8000);
 				SETFLAG_Z(result == 0);
 				parityW(result);
-				cycles = 8;
+				cycles_cpu_interpreter = 8;
 				break; }
 	}
 
@@ -502,14 +502,14 @@ void srcORi()
 //===== XOR (mem),#
 void srcXORi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: {	uint8 result = loadB(mem) ^ FETCH8;
 				storeB(mem, result);
 				SETFLAG_S(result & 0x80);
 				SETFLAG_Z(result == 0);
 				parityB(result);
-				cycles = 7;
+				cycles_cpu_interpreter = 7;
 				break; }
 
 	case 1: {	uint16 result = loadW(mem) ^ fetch16();
@@ -517,7 +517,7 @@ void srcXORi()
 				SETFLAG_S(result & 0x8000);
 				SETFLAG_Z(result == 0);
 				parityW(result);
-				cycles = 8;
+				cycles_cpu_interpreter = 8;
 				break; }
 	}
 
@@ -529,13 +529,13 @@ void srcXORi()
 //===== CP (mem),#
 void srcCPi()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	generic_SUB_B(loadB(mem), FETCH8);	break;
 	case 1:	generic_SUB_W(loadW(mem), fetch16());	break;
 	}
 	
-	cycles = 6;
+	cycles_cpu_interpreter = 6;
 }
 
 //===== MUL RR,(mem)
@@ -550,12 +550,12 @@ void srcMUL()
 	}
 #endif
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: rCodeW(target) = (rCodeW(target) & 0xFF) * loadB(mem);
-		cycles = 18; break;
+		cycles_cpu_interpreter = 18; break;
 	case 1: rCodeL(target) = (rCodeL(target) & 0xFFFF) * loadW(mem);
-		cycles = 26; break;
+		cycles_cpu_interpreter = 26; break;
 	}
 }
 
@@ -571,12 +571,12 @@ void srcMULS()
 	}
 #endif
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: rCodeW(target) = (int8)(rCodeW(target) & 0xFF) * (int8)loadB(mem);
-		cycles = 18; break;
+		cycles_cpu_interpreter = 18; break;
 	case 1: rCodeL(target) = (int16)(rCodeL(target) & 0xFFFF) * (int16)loadW(mem);
-		cycles = 26; break;
+		cycles_cpu_interpreter = 26; break;
 	}
 }
 
@@ -592,14 +592,14 @@ void srcDIV()
 	}
 #endif
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: {	rCodeW(target) = generic_DIV_B(rCodeW(target), loadB(mem));
-				cycles = 22;
+				cycles_cpu_interpreter = 22;
 				break;	}
 				
 	case 1: {	rCodeL(target) = generic_DIV_W(rCodeL(target), loadW(mem));
-				cycles = 30;
+				cycles_cpu_interpreter = 30;
 				break;	}
 	}
 }
@@ -616,14 +616,14 @@ void srcDIVS()
 	}
 #endif
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: {	rCodeW(target) = generic_DIVS_B(rCodeW(target), loadB(mem));
-				cycles = 24;
+				cycles_cpu_interpreter = 24;
 				break;	}
 
 	case 1: {	rCodeL(target) = generic_DIVS_W(rCodeL(target), loadW(mem));
-				cycles = 32;
+				cycles_cpu_interpreter = 32;
 				break;	}
 	}
 }
@@ -635,7 +635,7 @@ void srcINC()
 	if (val == 0)
 		val = 8;
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: {	uint8 dst = loadB(mem);
 				uint32 resultC = dst + val;
@@ -668,7 +668,7 @@ void srcINC()
 				break; }
 	}
 
-	cycles = 6;
+	cycles_cpu_interpreter = 6;
 }
 
 //===== DEC #3,(mem)
@@ -678,7 +678,7 @@ void srcDEC()
 	if (val == 0)
 		val = 8;
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0: {	uint8 dst = loadB(mem);
 				uint32 resultC = dst - val;
@@ -711,13 +711,13 @@ void srcDEC()
 				break; }
 	}
 
-	cycles = 6;
+	cycles_cpu_interpreter = 6;
 }
 
 //===== RLC (mem)
 void srcRLC()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = loadB(mem);
 				SETFLAG_C(result & 0x80);
@@ -743,13 +743,13 @@ void srcRLC()
 	SETFLAG_H0;
 	SETFLAG_N0;
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== RRC (mem)
 void srcRRC()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 data = loadB(mem), result;
 				SETFLAG_C(data & 1);
@@ -775,7 +775,7 @@ void srcRRC()
 	SETFLAG_H0;
 	SETFLAG_N0;
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== RL (mem)
@@ -783,7 +783,7 @@ void srcRL()
 {
 	bool tempC;
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = loadB(mem);
 				tempC = FLAG_C;
@@ -808,7 +808,7 @@ void srcRL()
 				break; }
 	}
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== RR (mem)
@@ -816,7 +816,7 @@ void srcRR()
 {
 	bool tempC;
 
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = loadB(mem);
 				tempC = FLAG_C;
@@ -841,13 +841,13 @@ void srcRR()
 				break; }
 	}
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== SLA (mem)
 void srcSLA()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result, data = loadB(mem);
 				SETFLAG_C(data & 0x80);
@@ -871,13 +871,13 @@ void srcSLA()
 	SETFLAG_H0;
 	SETFLAG_N0;
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== SRA (mem)
 void srcSRA()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result, data = loadB(mem);
 				SETFLAG_C(data & 0x1);
@@ -901,13 +901,13 @@ void srcSRA()
 	SETFLAG_H0;
 	SETFLAG_N0;
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== SLL (mem)
 void srcSLL()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result, data = loadB(mem);
 				SETFLAG_C(data & 0x80);
@@ -931,13 +931,13 @@ void srcSLL()
 	SETFLAG_H0;
 	SETFLAG_N0;
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== SRL (mem)
 void srcSRL()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result, data = loadB(mem);
 				SETFLAG_C(data & 0x01);
@@ -961,108 +961,108 @@ void srcSRL()
 	SETFLAG_H0;
 	SETFLAG_N0;
 
-	cycles = 8;
+	cycles_cpu_interpreter = 8;
 }
 
 //===== ADD R,(mem)
 void srcADDRm()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0: regB(R) = generic_ADD_B(regB(R), loadB(mem)); cycles = 4;break;
-	case 1: regW(R) = generic_ADD_W(regW(R), loadW(mem)); cycles = 4;break;
-	case 2: regL(R) = generic_ADD_L(regL(R), loadL(mem)); cycles = 6;break;
+	case 0: regB(R) = generic_ADD_B(regB(R), loadB(mem)); cycles_cpu_interpreter = 4;break;
+	case 1: regW(R) = generic_ADD_W(regW(R), loadW(mem)); cycles_cpu_interpreter = 4;break;
+	case 2: regL(R) = generic_ADD_L(regL(R), loadL(mem)); cycles_cpu_interpreter = 6;break;
 	}
 }
 
 //===== ADD (mem),R
 void srcADDmR()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_ADD_B(loadB(mem), regB(R))); cycles = 6;break;
-	case 1:	storeW(mem, generic_ADD_W(loadW(mem), regW(R))); cycles = 6;break;
-	case 2:	storeL(mem, generic_ADD_L(loadL(mem), regL(R))); cycles = 10;break;
+	case 0:	storeB(mem, generic_ADD_B(loadB(mem), regB(R))); cycles_cpu_interpreter = 6;break;
+	case 1:	storeW(mem, generic_ADD_W(loadW(mem), regW(R))); cycles_cpu_interpreter = 6;break;
+	case 2:	storeL(mem, generic_ADD_L(loadL(mem), regL(R))); cycles_cpu_interpreter = 10;break;
 	}
 }
 
 //===== ADC R,(mem)
 void srcADCRm()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0: regB(R) = generic_ADC_B(regB(R), loadB(mem)); cycles = 4;break;
-	case 1: regW(R) = generic_ADC_W(regW(R), loadW(mem)); cycles = 4;break;
-	case 2: regL(R) = generic_ADC_L(regL(R), loadL(mem)); cycles = 6;break;
+	case 0: regB(R) = generic_ADC_B(regB(R), loadB(mem)); cycles_cpu_interpreter = 4;break;
+	case 1: regW(R) = generic_ADC_W(regW(R), loadW(mem)); cycles_cpu_interpreter = 4;break;
+	case 2: regL(R) = generic_ADC_L(regL(R), loadL(mem)); cycles_cpu_interpreter = 6;break;
 	}
 }
 
 //===== ADC (mem),R
 void srcADCmR()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_ADC_B(loadB(mem), regB(R))); cycles = 6;break;
-	case 1:	storeW(mem, generic_ADC_W(loadW(mem), regW(R))); cycles = 6;break;
-	case 2:	storeL(mem, generic_ADC_L(loadL(mem), regL(R))); cycles = 10;break;
+	case 0:	storeB(mem, generic_ADC_B(loadB(mem), regB(R))); cycles_cpu_interpreter = 6;break;
+	case 1:	storeW(mem, generic_ADC_W(loadW(mem), regW(R))); cycles_cpu_interpreter = 6;break;
+	case 2:	storeL(mem, generic_ADC_L(loadL(mem), regL(R))); cycles_cpu_interpreter = 10;break;
 	}
 }
 
 //===== SUB R,(mem)
 void srcSUBRm()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0: regB(R) = generic_SUB_B(regB(R), loadB(mem)); cycles = 4;break;
-	case 1: regW(R) = generic_SUB_W(regW(R), loadW(mem)); cycles = 4;break;
-	case 2: regL(R) = generic_SUB_L(regL(R), loadL(mem)); cycles = 6;break;
+	case 0: regB(R) = generic_SUB_B(regB(R), loadB(mem)); cycles_cpu_interpreter = 4;break;
+	case 1: regW(R) = generic_SUB_W(regW(R), loadW(mem)); cycles_cpu_interpreter = 4;break;
+	case 2: regL(R) = generic_SUB_L(regL(R), loadL(mem)); cycles_cpu_interpreter = 6;break;
 	}
 }
 
 //===== SUB (mem),R
 void srcSUBmR()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_SUB_B(loadB(mem), regB(R))); cycles = 6;break;
-	case 1:	storeW(mem, generic_SUB_W(loadW(mem), regW(R))); cycles = 6;break;
-	case 2:	storeL(mem, generic_SUB_L(loadL(mem), regL(R))); cycles = 10;break;
+	case 0:	storeB(mem, generic_SUB_B(loadB(mem), regB(R))); cycles_cpu_interpreter = 6;break;
+	case 1:	storeW(mem, generic_SUB_W(loadW(mem), regW(R))); cycles_cpu_interpreter = 6;break;
+	case 2:	storeL(mem, generic_SUB_L(loadL(mem), regL(R))); cycles_cpu_interpreter = 10;break;
 	}
 }
 
 //===== SBC R,(mem)
 void srcSBCRm()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0: regB(R) = generic_SBC_B(regB(R), loadB(mem)); cycles = 4;break;
-	case 1: regW(R) = generic_SBC_W(regW(R), loadW(mem)); cycles = 4;break;
-	case 2: regL(R) = generic_SBC_L(regL(R), loadL(mem)); cycles = 6;break;
+	case 0: regB(R) = generic_SBC_B(regB(R), loadB(mem)); cycles_cpu_interpreter = 4;break;
+	case 1: regW(R) = generic_SBC_W(regW(R), loadW(mem)); cycles_cpu_interpreter = 4;break;
+	case 2: regL(R) = generic_SBC_L(regL(R), loadL(mem)); cycles_cpu_interpreter = 6;break;
 	}
 }
 
 //===== SBC (mem),R
 void srcSBCmR()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
-	case 0:	storeB(mem, generic_SBC_B(loadB(mem), regB(R))); cycles = 6;break;
-	case 1:	storeW(mem, generic_SBC_W(loadW(mem), regW(R))); cycles = 6;break;
-	case 2:	storeL(mem, generic_SBC_L(loadL(mem), regL(R))); cycles = 10;break;
+	case 0:	storeB(mem, generic_SBC_B(loadB(mem), regB(R))); cycles_cpu_interpreter = 6;break;
+	case 1:	storeW(mem, generic_SBC_W(loadW(mem), regW(R))); cycles_cpu_interpreter = 6;break;
+	case 2:	storeL(mem, generic_SBC_L(loadL(mem), regL(R))); cycles_cpu_interpreter = 10;break;
 	}
 }
 
 //===== AND R,(mem)
 void srcANDRm()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = regB(R) & loadB(mem);
 				regB(R) = result;
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80);
 				parityB(result);
-				cycles = 4;
+				cycles_cpu_interpreter = 4;
 				break; }
 	
 	case 1: {	uint16 result = regW(R) & loadW(mem);
@@ -1070,14 +1070,14 @@ void srcANDRm()
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x8000);
 				parityW(result);
-				cycles = 4;
+				cycles_cpu_interpreter = 4;
 				break; }
 
 	case 2:	{	uint32 result = regL(R) & loadL(mem);
 				regL(R) = result;
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80000000);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 	}
 
@@ -1089,14 +1089,14 @@ void srcANDRm()
 //===== AND (mem),R
 void srcANDmR()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = regB(R) & loadB(mem);
 				storeB(mem, result);
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80);
 				parityB(result);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 	
 	case 1: {	uint16 result = regW(R) & loadW(mem);
@@ -1104,14 +1104,14 @@ void srcANDmR()
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x8000);
 				parityW(result);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 
 	case 2:	{	uint32 result = regL(R) & loadL(mem);
 				storeL(mem, result);
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80000000);
-				cycles = 10;
+				cycles_cpu_interpreter = 10;
 				break; }
 	}
 
@@ -1123,14 +1123,14 @@ void srcANDmR()
 //===== XOR R,(mem)
 void srcXORRm()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = regB(R) ^ loadB(mem);
 				regB(R) = result;
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80);
 				parityB(result);
-				cycles = 4;
+				cycles_cpu_interpreter = 4;
 				break; }
 	
 	case 1: {	uint16 result = regW(R) ^ loadW(mem);
@@ -1138,14 +1138,14 @@ void srcXORRm()
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x8000);
 				parityW(result);
-				cycles = 4;
+				cycles_cpu_interpreter = 4;
 				break; }
 
 	case 2:	{	uint32 result = regL(R) ^ loadL(mem);
 				regL(R) = result;
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80000000);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 	}
 
@@ -1157,14 +1157,14 @@ void srcXORRm()
 //===== XOR (mem),R
 void srcXORmR()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = regB(R) ^ loadB(mem);
 				storeB(mem, result);
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80);
 				parityB(result);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 	
 	case 1: {	uint16 result = regW(R) ^ loadW(mem);
@@ -1172,14 +1172,14 @@ void srcXORmR()
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x8000);
 				parityW(result);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 
 	case 2:	{	uint32 result = regL(R) ^ loadL(mem);
 				storeL(mem, result);
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80000000);
-				cycles = 10;
+				cycles_cpu_interpreter = 10;
 				break; }
 	}
 
@@ -1191,14 +1191,14 @@ void srcXORmR()
 //===== OR R,(mem)
 void srcORRm()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = regB(R) | loadB(mem);
 				regB(R) = result;
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80);
 				parityB(result);
-				cycles = 4;
+				cycles_cpu_interpreter = 4;
 				break; }
 	
 	case 1: {	uint16 result = regW(R) | loadW(mem);
@@ -1206,14 +1206,14 @@ void srcORRm()
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x8000);
 				parityW(result);
-				cycles = 4;
+				cycles_cpu_interpreter = 4;
 				break; }
 
 	case 2:	{	uint32 result = regL(R) | loadL(mem);
 				regL(R) = result;
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80000000);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 	}
 
@@ -1225,14 +1225,14 @@ void srcORRm()
 //===== OR (mem),R
 void srcORmR()
 {
-	switch(size)
+	switch(size_cpu_interpreter)
 	{
 	case 0:	{	uint8 result = regB(R) | loadB(mem);
 				storeB(mem, result);
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80);
 				parityB(result);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 	
 	case 1: {	uint16 result = regW(R) | loadW(mem);
@@ -1240,14 +1240,14 @@ void srcORmR()
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x8000);
 				parityW(result);
-				cycles = 6;
+				cycles_cpu_interpreter = 6;
 				break; }
 
 	case 2:	{	uint32 result = regL(R) | loadL(mem);
 				storeL(mem, result);
 				SETFLAG_Z(result == 0);
 				SETFLAG_S(result & 0x80000000);
-				cycles = 10;
+				cycles_cpu_interpreter = 10;
 				break; }
 	}
 
@@ -1259,19 +1259,19 @@ void srcORmR()
 //===== CP R,(mem)
 void srcCPRm(void)
 {
-   switch(size)
+   switch(size_cpu_interpreter)
    {
       case 0:
          generic_SUB_B(regB(R), loadB(mem));
-         cycles = 4;
+         cycles_cpu_interpreter = 4;
          break;
       case 1:
          generic_SUB_W(regW(R), loadW(mem));
-         cycles = 4;
+         cycles_cpu_interpreter = 4;
          break;
       case 2:
          generic_SUB_L(regL(R), loadL(mem));
-         cycles = 6;
+         cycles_cpu_interpreter = 6;
          break;
    }
 }
@@ -1279,7 +1279,7 @@ void srcCPRm(void)
 //===== CP (mem),R
 void srcCPmR(void)
 {
-   switch(size)
+   switch(size_cpu_interpreter)
    {
       case 0:
          generic_SUB_B(loadB(mem), regB(R));
@@ -1292,7 +1292,7 @@ void srcCPmR(void)
          break;
    }
 
-   cycles = 6;
+   cycles_cpu_interpreter = 6;
 }
 
 //=============================================================================

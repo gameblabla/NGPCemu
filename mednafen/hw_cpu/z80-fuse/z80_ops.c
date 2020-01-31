@@ -29,9 +29,9 @@
 #include "z80_macros.h"
 #include "z80_fns.h"
 
-int iline = 0;
+static uint_fast8_t iline = 0;
 
-void z80_set_interrupt(int set)
+void z80_set_interrupt(uint_fast8_t set)
 {
    iline = set;
 }
@@ -45,7 +45,7 @@ int z80_do_opcode( void )
    {
       if(z80_interrupt())
       {
-         int ret = z80_tstates - last_z80_tstates;
+         ret = z80_tstates - last_z80_tstates;
          last_z80_tstates = z80_tstates;
          return ret;
       }
@@ -1781,9 +1781,8 @@ int z80_do_opcode( void )
          break;
       case 0xd3:		/* OUT (nn),A */
          { 
-            uint16 outtemp;
-            outtemp = Z80_RB_MACRO( PC++ ) + ( A << 8 );
-            Z80_WP_MACRO( /*outtemp, A*/ );
+			Z80_RB_MACRO( PC++ );
+            Z80_WP_MACRO();
          }
          break;
       case 0xd4:		/* CALL NC,nnnn */
@@ -1828,8 +1827,7 @@ int z80_do_opcode( void )
          break;
       case 0xdb:		/* IN A,(nn) */
          { 
-            uint16 intemp;
-            intemp = Z80_RB_MACRO( PC++ ) + ( A << 8 );
+            Z80_RB_MACRO( PC++ );
             A=Z80_RP_MACRO();
          }
          break;

@@ -55,17 +55,17 @@ extern "C" {
 //Interprets a single instruction from 'pc', 
 //pc is incremented to the start of the next instruction.
 //Returns the number of cycles taken for this instruction
-int32 TLCS900h_interpret(void);
+int32_t TLCS900h_interpret(void);
 
 //=============================================================================
 
-extern uint32 mem;	
-extern int size;
-extern uint8 first;			//First byte
-extern uint8 second;			//Second byte
-extern uint8 R;				//(second & 7)
-extern uint8 rCode;
-extern int32 cycles;
+extern uint32_t mem;	
+extern uint8_t first;			//First byte
+extern uint8_t second;			//Second byte
+extern uint8_t R;				//(second & 7)
+extern uint8_t rCode;
+extern int32_t cycles_cpu_interpreter;
+extern uint_fast8_t size_cpu_interpreter;
 extern bool brCode;
 
 //=============================================================================
@@ -76,65 +76,65 @@ extern void (*instruction_error)(const char* vaMessage,...);
 
 #define FETCH8		loadB(pc++)
 
-uint16 fetch16(void);
-uint32 fetch24(void);
-uint32 fetch32(void);
+uint16_t fetch16(void);
+uint32_t fetch24(void);
+uint32_t fetch32(void);
 
 //=============================================================================
 
-void parityB(uint8 value);
-void parityW(uint16 value);
+void parityB(uint8_t value);
+void parityW(uint16_t value);
 
 //=============================================================================
 
-void push8(uint8 data);
-void push16(uint16 data);
-void push32(uint32 data);
+void push8(uint8_t data);
+void push16(uint16_t data);
+void push32(uint32_t data);
 
-uint8 pop8(void);
-uint16 pop16(void);
-uint32 pop32(void);
+uint8_t pop8(void);
+uint16_t pop16(void);
+uint32_t pop32(void);
 
 //=============================================================================
 
 //DIV ===============
-uint16 generic_DIV_B(uint16 val, uint8 div);
-uint32 generic_DIV_W(uint32 val, uint16 div);
+uint16_t generic_DIV_B(uint16_t val, uint8_t div);
+uint32_t generic_DIV_W(uint32_t val, uint16_t div);
 
 //DIVS ===============
-uint16 generic_DIVS_B(int16 val, int8 div);
-uint32 generic_DIVS_W(int32 val, int16 div);
+uint16_t generic_DIVS_B(int16 val, int8 div);
+uint32_t generic_DIVS_W(int32 val, int16 div);
 
 //ADD ===============
-uint8	generic_ADD_B(uint8 dst, uint8 src);
-uint16 generic_ADD_W(uint16 dst, uint16 src);
-uint32 generic_ADD_L(uint32 dst, uint32 src);
+uint8_t	generic_ADD_B(uint8_t dst, uint8_t src);
+uint16_t generic_ADD_W(uint16_t dst, uint16_t src);
+uint32_t generic_ADD_L(uint32_t dst, uint32_t src);
 
 //ADC ===============
-uint8	generic_ADC_B(uint8 dst, uint8 src);
-uint16 generic_ADC_W(uint16 dst, uint16 src);
-uint32 generic_ADC_L(uint32 dst, uint32 src);
+uint8_t	generic_ADC_B(uint8_t dst, uint8_t src);
+uint16_t generic_ADC_W(uint16_t dst, uint16_t src);
+uint32_t generic_ADC_L(uint32_t dst, uint32_t src);
 
 //SUB ===============
-uint8	generic_SUB_B(uint8 dst, uint8 src);
-uint16 generic_SUB_W(uint16 dst, uint16 src);
-uint32 generic_SUB_L(uint32 dst, uint32 src);
+uint8_t	generic_SUB_B(uint8_t dst, uint8_t src);
+uint16_t generic_SUB_W(uint16_t dst, uint16_t src);
+uint32_t generic_SUB_L(uint32_t dst, uint32_t src);
 
 //SBC ===============
-uint8	generic_SBC_B(uint8 dst, uint8 src);
-uint16 generic_SBC_W(uint16 dst, uint16 src);
-uint32 generic_SBC_L(uint32 dst, uint32 src);
+uint8_t	generic_SBC_B(uint8_t dst, uint8_t src);
+uint16_t generic_SBC_W(uint16_t dst, uint16_t src);
+uint32_t generic_SBC_L(uint32_t dst, uint32_t src);
 
 //=============================================================================
 
 //Confirms a condition code check
-bool conditionCode(int cc);
+bool conditionCode(uint_fast8_t cc);
 
 //=============================================================================
 
 //Translate an rr or RR value for MUL/MULS/DIV/DIVS
-uint8 get_rr_Target(void);
-uint8 get_RR_Target(void);
+uint8_t get_rr_Target(void);
+uint8_t get_RR_Target(void);
 
 #ifdef __cplusplus
 }

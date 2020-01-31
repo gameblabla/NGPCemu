@@ -38,7 +38,7 @@ void z80_reset( void );
 
 void z80_nmi( void );
 
-void z80_set_interrupt(int set);
+void z80_set_interrupt(uint_fast8_t set);
 
 int z80_interrupt( void );
 

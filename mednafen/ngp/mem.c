@@ -199,7 +199,7 @@ extern "C" {
 /* Treat all 32-bit operations as two 16-bit operations */
 extern uint32 pc;
 
-uint8_t lastpoof = 0;
+static uint8_t lastpoof = 0;
 
 uint8_t loadB(uint32 address)
 {
@@ -222,7 +222,6 @@ uint8_t loadB(uint32 address)
 			return(int_read8(address));
 		case 0x90 ... 0x97:
 			 return(rtc_read8(address));
-		break;
 		case 0x50:
 			return(SC0BUF);
 		case 0xBC:

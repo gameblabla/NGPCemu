@@ -168,7 +168,7 @@ static void draw_colour_scroll2(ngpgfx_t *gfx, uint16_t *cfb_scanline,
 }
 
 static void draw_scanline_colour(ngpgfx_t *gfx, uint16_t *cfb_scanline,
-      int layer_enable, int ngpc_scanline)
+      uint8_t layer_enable, int ngpc_scanline)
 {
 	int16_t lastSpriteX;
 	int16_t lastSpriteY;
@@ -418,7 +418,7 @@ static void draw_mono_scroll2(ngpgfx_t *gfx, uint16_t *cfb_scanline, uint8_t *zb
 }
 
 static void draw_scanline_mono(ngpgfx_t *gfx,
-      uint16_t *cfb_scanline, int layer_enable, int ngpc_scanline)
+      uint16_t *cfb_scanline, uint8_t layer_enable, int ngpc_scanline)
 {
    int x;
    uint16_t *scan;
@@ -657,7 +657,7 @@ void ngpgfx_set_pixel_format(ngpgfx_t *gfx)
 
 bool ngpgfx_draw(ngpgfx_t *gfx, void *data, bool skip)
 {
-   unsigned x;
+   uint_fast32_t x;
    bool ret = 0;
    MDFN_Surface *surface = (MDFN_Surface*)data;
 
