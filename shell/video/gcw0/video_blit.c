@@ -26,7 +26,7 @@
 #define SDL_TRIPLEBUF SDL_DOUBLEBUF
 #endif
 
-#define FLAGS_SDL SDL_HWSURFACE | SDL_DOUBLEBUF
+#define FLAGS_SDL SDL_HWSURFACE | SDL_TRIPLEBUF
 
 SDL_Surface *sdl_screen, *backbuffer, *ngp_vs;
 static SDL_Joystick *sdl_joy;
