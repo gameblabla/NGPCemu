@@ -127,8 +127,6 @@ void NGP_APUSaveState(uint_fast8_t load, FILE* fp)
 		fread(&sn_state->latch_right, sizeof(uint8_t), sizeof(sn_state->latch_right), fp);
 		
 		apu.load_state(sn_state);
-		synth.offset(ngpc_soundTS >> 1, CurrentDACLeft - LastDACLeft, buf.left());
-		synth.offset(ngpc_soundTS >> 1, CurrentDACRight - LastDACRight, buf.right());
 		LastDACLeft = CurrentDACLeft;
 		LastDACRight = CurrentDACRight;
 	}
