@@ -1,13 +1,13 @@
-PRGNAME     = ngp.elf
+PRGNAME     = ngpcemu
 CC			= /opt/rs97-toolchain/bin/mipsel-linux-gcc
 CXX			= /opt/rs97-toolchain/bin/mipsel-linux-g++
 
 #### Configuration
 
 # Possible values : retrostone, rs97, rs90
-PORT = rs97
+PORT = gcw0
 # Possible values : alsa, oss, portaudio
-SOUND_ENGINE = oss
+SOUND_ENGINE = sdl
 # Possible values : generic, rs90
 MENU = generic
 # Possible values : 0, YES, APPLY
@@ -22,7 +22,7 @@ INCLUDES	+= -Ishell/headers -Ishell/video/$(PORT) -Ishell/audio -Ishell/scalers 
 
 DEFINES		= -DLSB_FIRST -DWANT_16BPP -DFRONTEND_SUPPORTS_RGB565 -DINLINE="inline" -DWANT_STEREO_SOUND
 DEFINES		+= -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.31\" -DPACKAGE=\"mednafen\" -DMEDNAFEN_VERSION_NUMERIC=931 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DSTDC_HEADERS -D__STDC_LIMIT_MACROS -D_LOW_ACCURACY_
-DEFINES		+= -DGIT_VERSION=\"$(GIT_VERSION)\" -DNOAVERAGING -DNDEBUG -DRS97 -DFRAMESKIP
+DEFINES		+= -DGIT_VERSION=\"$(GIT_VERSION)\" -DNOAVERAGING -DNDEBUG -DRS97 -DIPU_SCALE
    
 CFLAGS		= -Ofast -fdata-sections -ffunction-sections -mlong32 -funroll-loops -mno-fp-exceptions -mno-check-zero-division -mframe-header-opt -fsingle-precision-constant -fno-common -mips32 -fno-PIC -mno-abicalls -flto
 CFLAGS		+= $(INCLUDES) $(DEFINES)
