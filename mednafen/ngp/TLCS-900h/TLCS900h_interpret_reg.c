@@ -739,7 +739,7 @@ void regMINC1()
 {
 	uint16 num = fetch16() + 1;
 
-	if (size_cpu_interpreter == 1)
+	if (size_cpu_interpreter == 1 && num)
 	{
 		if ((rCodeW(rCode) % num) == (num - 1))
 			rCodeW(rCode) -= (num - 1);
@@ -755,7 +755,7 @@ void regMINC2()
 {
 	uint16 num = fetch16() + 2;
 
-	if (size_cpu_interpreter == 1)
+	if (size_cpu_interpreter == 1 && num)
 	{
 		if ((rCodeW(rCode) % num) == (num - 2))
 			rCodeW(rCode) -= (num - 2);
@@ -771,7 +771,7 @@ void regMINC4()
 {
 	uint16 num = fetch16() + 4;
 
-	if (size_cpu_interpreter == 1)
+	if (size_cpu_interpreter == 1 && num)
 	{
 		if ((rCodeW(rCode) % num) == (num - 4))
 			rCodeW(rCode) -= (num - 4);
@@ -787,7 +787,7 @@ void regMDEC1()
 {
 	uint16 num = fetch16() + 1;
 
-	if (size_cpu_interpreter == 1)
+	if (size_cpu_interpreter == 1 && num)
 	{
 		if ((rCodeW(rCode) % num) == 0)
 			rCodeW(rCode) += (num - 1);
@@ -803,7 +803,7 @@ void regMDEC2()
 {
 	uint16 num = fetch16() + 2;
 
-	if (size_cpu_interpreter == 1)
+	if (size_cpu_interpreter == 1 && num)
 	{
 		if ((rCodeW(rCode) % num) == 0)
 			rCodeW(rCode) += (num - 2);
@@ -819,7 +819,7 @@ void regMDEC4()
 {
 	uint16 num = fetch16() + 4;
 
-	if (size_cpu_interpreter == 1)
+	if (size_cpu_interpreter == 1 && num)
 	{
 		if ((rCodeW(rCode) % num) == 0)
 			rCodeW(rCode) += (num - 4);
