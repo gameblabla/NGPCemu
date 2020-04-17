@@ -413,7 +413,8 @@ void iBIOSHLE(void)
                TestIntHDMA(12, 0x19);
                return;
             }
-            break;
+            else
+             break;
          }*/
 
          return;
