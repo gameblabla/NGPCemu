@@ -201,7 +201,7 @@ extern uint32 pc;
 
 static uint8_t lastpoof = 0;
 
-uint8_t loadB(uint32 address)
+uint8_t loadB(uint32_t address)
 {
 	uint8_t *ptr;
 	address &= 0xFFFFFF;
@@ -239,12 +239,17 @@ uint8_t loadB(uint32 address)
 	return 0;
 }
 
-uint16_t loadW(uint32 address)
+uint16_t loadW(uint32_t address)
 {
    address &= 0xFFFFFF;
 
    if(address & 1)
-      return(loadB(address) | (loadB(address + 1) << 8));
+   {
+		uint16_t ret;
+		ret = loadB(address);
+		ret |= loadB(address + 1) << 8;
+		return(ret);
+   }
 
    if(FastReadMap[address >> 16])
    {
@@ -283,13 +288,34 @@ uint16_t loadW(uint32 address)
       return(SC0BUF);
 
    if(address >= 0x70 && address <= 0x7F)
-      return(int_read8(address) | (int_read8(address + 1) << 8));
+   {
+      uint16 ret;
+
+      ret = int_read8(address);
+      ret |= int_read8(address + 1) << 8;
+
+      return(ret);
+   }
 
    if(address >= 0x90 && address <= 0x97)
-      return(rtc_read8(address) | (rtc_read8(address + 1) << 8));
+   {
+      uint16 ret;
+
+      ret = rtc_read8(address);
+      ret |= rtc_read8(address + 1) << 8;
+
+      return(ret);
+   }
 
    if(address >= 0x20 && address <= 0x29)
-      return(timer_read8(address) | (timer_read8(address + 1) << 8));
+   {
+      uint16 ret;
+
+      ret = timer_read8(address);
+      ret |= timer_read8(address + 1) << 8;
+
+      return(ret);
+   }
 
    if(address == 0xBC)
       return Z80_ReadComm();
@@ -299,9 +325,12 @@ uint16_t loadW(uint32 address)
    return(0);
 }
 
-uint32 loadL(uint32 address)
+uint32_t loadL(uint32_t address)
 {
-	return (loadW(address) | loadW(address + 2) << 16);
+	uint32_t ret;
+	ret = loadW(address);
+	ret |= loadW(address + 2) << 16;
+	return(ret);
 }
 
 void storeB(uint32 address, uint8_t data)
