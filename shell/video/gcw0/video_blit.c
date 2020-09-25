@@ -34,29 +34,33 @@ static SDL_Joystick *sdl_joy;
 uint32_t width_of_surface;
 uint16_t* Draw_to_Virtual_Screen;
 
-#ifdef RS97
-static const char *KEEP_ASPECT_FILENAME = "/proc/jz/ipu";
-#else
 static const char *KEEP_ASPECT_FILENAME = "/sys/devices/platform/jz-lcd.0/keep_aspect_ratio";
-#endif
 
 static inline uint_fast8_t get_keep_aspect_ratio()
 {
 	FILE *f = fopen(KEEP_ASPECT_FILENAME, "rb");
-	if (!f) return false;
+	if (!f) return 0;
 	char c;
 	fread(&c, 1, 1, f);
 	fclose(f);
 	return c == 'Y';
 }
 
-static inline void set_keep_aspect_ratio(uint_fast8_t n)
+static inline void set_keep_aspect_ratio(uint32_t n)
 {
+/* Shit isn't working and i'm not sure why. SimpleMenu's source code isn't helpful either*/
+#ifdef RS97
+	if (FILE *f = fopen("/proc/jz/ipu", "w")) {
+		fprintf(f, "%d", mode); // fputs(val, f);
+		fclose(f);
+	}
+#else
 	FILE *f = fopen(KEEP_ASPECT_FILENAME, "wb");
 	if (!f) return;
 	char c = n ? 'Y' : 'N';
 	fwrite(&c, 1, 1, f);
 	fclose(f);
+#endif
 }
 
 void Init_Video()
