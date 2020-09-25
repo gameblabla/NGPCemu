@@ -126,6 +126,7 @@ void NGP_APUSaveState(uint_fast8_t load, FILE* fp)
 		fread(&sn_state->latch_left, sizeof(uint8_t), sizeof(sn_state->latch_left), fp);
 		fread(&sn_state->latch_right, sizeof(uint8_t), sizeof(sn_state->latch_right), fp);
 		
+		buf.clear();
 		apu.load_state(sn_state);
 		LastDACLeft = CurrentDACLeft;
 		LastDACRight = CurrentDACRight;
