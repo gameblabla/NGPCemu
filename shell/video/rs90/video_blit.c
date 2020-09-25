@@ -56,6 +56,16 @@ void Set_Video_InGame()
 	if (sdl_screen->w != HOST_WIDTH_RESOLUTION) sdl_screen = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, SDL_HWSURFACE);
 	Draw_to_Virtual_Screen = ngp_vs->pixels;
 	width_of_surface = INTERNAL_NGP_WIDTH;
+	
+	
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+#ifdef SDL_TRIPLEBUF
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+#endif
 }
 
 void Close_Video()
@@ -68,10 +78,15 @@ void Close_Video()
 
 void Update_Video_Menu()
 {
+	bitmap_scale(0,0,240,160,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
 	SDL_Flip(sdl_screen);
 }
 
-void Update_Video_Ingame()
+void Update_Video_Ingame(
+#ifdef FRAMESKIP
+uint_fast8_t skip
+#endif
+)
 {
 	uint32_t y, pitch;
 	uint16_t *src, *dst;
@@ -116,5 +131,9 @@ void Update_Video_Ingame()
 		break;
 	}
 	SDL_UnlockSurface(sdl_screen);	
+	#ifdef FRAMESKIP
+	if (!skip) SDL_Flip(sdl_screen);
+	#else
 	SDL_Flip(sdl_screen);
+	#endif
 }

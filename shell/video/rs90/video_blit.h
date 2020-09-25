@@ -19,6 +19,10 @@ void Set_Video_Menu();
 void Set_Video_InGame();
 void Close_Video();
 void Update_Video_Menu();
-void Update_Video_Ingame();
+void Update_Video_Ingame(
+#ifdef FRAMESKIP
+uint_fast8_t skip
+#endif
+);
 
 #endif

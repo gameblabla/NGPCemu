@@ -3,7 +3,8 @@
 
 #include <SDL/SDL.h>
 
-extern SDL_Surface *sdl_screen, *ngp_vs, *backbuffer;
+extern SDL_Surface *surf;
+#define backbuffer surf
 
 #define HOST_WIDTH_RESOLUTION 320
 #define HOST_HEIGHT_RESOLUTION 240
@@ -19,6 +20,10 @@ void Set_Video_Menu();
 void Set_Video_InGame();
 void Close_Video();
 void Update_Video_Menu();
-void Update_Video_Ingame();
+void Update_Video_Ingame(
+#ifdef FRAMESKIP
+uint_fast8_t skip
+#endif
+);
 
 #endif

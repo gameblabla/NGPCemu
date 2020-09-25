@@ -15,7 +15,13 @@
 #include "config.h"
 #include "menu.h"
 
+#ifdef USE_SDL_SURFACE
+extern SDL_Surface *surf;
+#define sdl_screen surf
+#else
 extern SDL_Surface *sdl_screen;
+#endif
+
 extern char GameName_emu[512];
 
 extern void SaveState(const char* path, uint_fast8_t load);
@@ -286,8 +292,7 @@ static void Input_Remapping()
 		if (currentselection == 7) print_string(text, TextRed, 0, 5, 145+2, backbuffer->pixels);
 		else print_string(text, TextWhite, 0, 5, 145+2, backbuffer->pixels);
 
-		bitmap_scale(0,0,320,240,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
-		SDL_Flip(sdl_screen);
+		Update_Video_Menu();
 	}
 	
 	config_save();
@@ -464,18 +469,8 @@ void Menu()
             }
         }
 
-		bitmap_scale(0,0,320,240,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
-		SDL_Flip(sdl_screen);
+		Update_Video_Menu();
     }
-    
-    SDL_FillRect(sdl_screen, NULL, 0);
-    SDL_Flip(sdl_screen);
-    SDL_FillRect(sdl_screen, NULL, 0);
-    SDL_Flip(sdl_screen);
-    #ifdef SDL_TRIPLEBUF
-    SDL_FillRect(sdl_screen, NULL, 0);
-    SDL_Flip(sdl_screen);
-    #endif
     
     if (currentselection == 6)
     {

@@ -47,13 +47,19 @@ typedef struct
    uint8_t a_shift;
 } MDFN_PixelFormat;
 
+#ifdef USE_SDL_SURFACE
+#include <SDL/SDL.h>
+extern SDL_Surface *surf;
+#define MDFN_Surface SDL_Surface
+#else
 typedef struct
 {
    uint16_t *pixels;
-   int32_t width;
-   int32_t height;
+   int32_t w;
+   int32_t h;
    int32_t pitch;
 } MDFN_Surface;
+#endif
 
 #ifdef __cplusplus
 }

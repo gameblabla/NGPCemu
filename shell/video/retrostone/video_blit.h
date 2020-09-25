@@ -2,8 +2,10 @@
 #define VIDEO_BLIT_H
 
 #include <SDL/SDL.h>
+extern SDL_Surface *surf;
+#define backbuffer surf
 
-extern SDL_Surface *sdl_screen, *ngp_vs, *backbuffer;
+extern SDL_Surface *sdl_screen, *backbuffer;
 
 #define HOST_WIDTH_RESOLUTION (sdl_screen->w)
 #define HOST_HEIGHT_RESOLUTION (sdl_screen->h)
@@ -19,6 +21,10 @@ void Set_Video_Menu();
 void Set_Video_InGame();
 void Close_Video();
 void Update_Video_Menu();
-void Update_Video_Ingame();
+void Update_Video_Ingame(
+#ifdef FRAMESKIP
+uint_fast8_t skip
+#endif
+);
 
 #endif

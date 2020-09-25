@@ -280,8 +280,7 @@ static void Input_Remapping()
 		if (currentselection == 7) print_string(text, TextRed, 0, 5, 125+2+7, backbuffer->pixels);
 		else print_string(text, TextWhite, 0, 5, 125+2+7, backbuffer->pixels);
 
-		bitmap_scale(0,0,240,160,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
-		SDL_Flip(sdl_screen);
+		Update_Video_Menu();
 	}
 	
 	config_save();
@@ -455,18 +454,8 @@ void Menu()
             }
         }
 
-		bitmap_scale(0,0,240,160,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
-		SDL_Flip(sdl_screen);
+		Update_Video_Menu();
     }
-    
-    SDL_FillRect(sdl_screen, NULL, 0);
-    SDL_Flip(sdl_screen);
-    SDL_FillRect(sdl_screen, NULL, 0);
-    SDL_Flip(sdl_screen);
-    #ifdef SDL_TRIPLEBUF
-    SDL_FillRect(sdl_screen, NULL, 0);
-    SDL_Flip(sdl_screen);
-    #endif
     
     if (currentselection == 6)
     {

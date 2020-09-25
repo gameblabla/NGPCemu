@@ -28,13 +28,16 @@
 
 #define FLAGS_SDL SDL_HWSURFACE | SDL_TRIPLEBUF
 
-SDL_Surface *sdl_screen, *backbuffer, *ngp_vs;
+SDL_Surface *surf, *backbuffer;
 static SDL_Joystick *sdl_joy;
 
 uint32_t width_of_surface;
-uint16_t* Draw_to_Virtual_Screen;
 
 static const char *KEEP_ASPECT_FILENAME = "/sys/devices/platform/jz-lcd.0/keep_aspect_ratio";
+
+#if !defined(USE_SDL_SURFACE)
+#error "USE_SDL_SURFACE define needs to be enabled for GCW0 build !"
+#endif
 
 static inline uint_fast8_t get_keep_aspect_ratio()
 {
@@ -52,13 +55,7 @@ static inline uint_fast8_t get_keep_aspect_ratio()
 
 static inline void set_keep_aspect_ratio(uint32_t n)
 {
-#ifdef RS97
-	FILE *f;
-	if (f = fopen("/proc/jz/ipu", "w")) {
-		fprintf(f, "%d", n);
-		fclose(f);
-	}
-#else
+#ifndef RS97
 	FILE *f = fopen(KEEP_ASPECT_FILENAME, "wb");
 	if (!f) return;
 	char c = n ? 'Y' : 'N';
@@ -73,13 +70,8 @@ void Init_Video()
 	
 	SDL_ShowCursor(0);
 	
-	sdl_screen = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, FLAGS_SDL);
-	
-	backbuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, 0,0,0,0);
-	
-	// We need to increase Height by 1 to avoid memory leaks. I hope i can fix this properly later...
-	ngp_vs = SDL_CreateRGBSurface(SDL_SWSURFACE, INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT+1, 16, 0,0,0,0);
-	
+	surf = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, FLAGS_SDL);
+
 	Set_Video_InGame();
 	
 	if (SDL_NumJoysticks() > 0)
@@ -91,79 +83,75 @@ void Init_Video()
 
 void Set_Video_Menu()
 {
-	if (sdl_screen && SDL_MUSTLOCK(sdl_screen)) SDL_UnlockSurface(sdl_screen);
+	if (surf && SDL_MUSTLOCK(surf)) SDL_UnlockSurface(surf);
 	
 	/* Fix mismatches when adjusting IPU ingame */
 	if (get_keep_aspect_ratio() == 1 && option.fullscreen == 0) option.fullscreen = 0;
 	else if (get_keep_aspect_ratio() == 0 && option.fullscreen == 1) option.fullscreen = 1;
 	
-	if (sdl_screen->w != HOST_WIDTH_RESOLUTION)
+	if (surf->w != HOST_WIDTH_RESOLUTION)
 	{
-		sdl_screen = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, FLAGS_SDL);
+		surf = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, FLAGS_SDL);
 	}
 	
-	if (SDL_MUSTLOCK(sdl_screen)) SDL_LockSurface(sdl_screen);
+	if (SDL_MUSTLOCK(surf)) SDL_LockSurface(surf);
 }
 
 void Set_Video_InGame()
 {
-	if (sdl_screen && SDL_MUSTLOCK(sdl_screen)) SDL_UnlockSurface(sdl_screen);
+	if (surf && SDL_MUSTLOCK(surf)) SDL_UnlockSurface(surf);
 		
 	width_of_surface = INTERNAL_NGP_WIDTH;
-	Draw_to_Virtual_Screen = ngp_vs->pixels;
 		
 	switch(option.fullscreen) 
 	{
 		/* Stretched, fullscreen */
 		case 0:
 			set_keep_aspect_ratio(0);
-			sdl_screen = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
+			surf = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
 		break;
 		/* Keep Aspect Ratio */
 		case 1:
 			set_keep_aspect_ratio(1);
-			sdl_screen = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
+			surf = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
 		break;
     }
     
-	if (SDL_MUSTLOCK(sdl_screen)) SDL_LockSurface(sdl_screen);
+	if (SDL_MUSTLOCK(surf)) SDL_LockSurface(surf);
+	
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+#ifdef SDL_TRIPLEBUF
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+#endif
 }
 
 void Close_Video()
 {
 	if (SDL_JoystickOpened(0)) SDL_JoystickClose(sdl_joy);
-	if (sdl_screen) SDL_FreeSurface(sdl_screen);
+	if (surf) SDL_FreeSurface(surf);
 	if (backbuffer) SDL_FreeSurface(backbuffer);
-	if (ngp_vs) SDL_FreeSurface(ngp_vs);
 	SDL_Quit();
 }
 
 void Update_Video_Menu()
 {
-	if (SDL_MUSTLOCK(sdl_screen))
-		SDL_UnlockSurface(sdl_screen);
-	
-	SDL_Flip(sdl_screen);
-	
-	if (SDL_MUSTLOCK(sdl_screen))
-		SDL_LockSurface(sdl_screen);
+	bitmap_scale(0,0,320,240,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
+	SDL_Flip(surf);
 }
 
-void Update_Video_Ingame()
+void Update_Video_Ingame(
+#ifdef FRAMESKIP
+uint_fast8_t skip
+#endif
+)
 {
-	SDL_Rect dst;
-	dst.x = 0;
-	dst.y = 0;
-	dst.w = INTERNAL_NGP_WIDTH;
-	dst.h = INTERNAL_NGP_HEIGHT;
-	
-	if (SDL_MUSTLOCK(sdl_screen))
-		SDL_UnlockSurface(sdl_screen);
-		
-	SDL_BlitSurface(ngp_vs, &dst, sdl_screen, NULL);
-	
+	#ifdef FRAMESKIP
+	if (!skip) SDL_Flip(sdl_screen);
+	#else
 	SDL_Flip(sdl_screen);
-	
-	if (SDL_MUSTLOCK(sdl_screen))
-		SDL_LockSurface(sdl_screen);
+	#endif
 }

@@ -38,7 +38,9 @@
 #include "input.h"
 #include "menu.h"
 
+#ifndef USE_SDL_SURFACE
 static MDFN_Surface *surf;
+#endif
 
 extern uint8_t CPUExRAM[16384];
 
@@ -237,24 +239,26 @@ static void Init_NGP(void)
 
 uint_fast8_t Load_Game(char* path)
 {
-   LoadGame_NGP(path);
+	LoadGame_NGP(path);
 
-   surf = (MDFN_Surface*)calloc(1, sizeof(*surf));
+	#ifndef USE_SDL_SURFACE
+	surf = (MDFN_Surface*)calloc(1, sizeof(*surf));
    
-   if (!surf)
-      return 1;
+	if (!surf)
+		return 1;
    
-   surf->width  = FB_WIDTH;
-   surf->height = FB_HEIGHT;
-   surf->pitch  = FB_WIDTH;
+	surf->w  = FB_WIDTH;
+	surf->h = FB_HEIGHT;
+	surf->pitch  = FB_WIDTH;
 
-   surf->pixels = Draw_to_Virtual_Screen;
-
-   Init_NGP();
-   ngpgfx_set_pixel_format(NGPGfx);
-   MDFNNGPC_SetSoundRate(SOUND_OUTPUT_FREQUENCY);
+	surf->pixels = Draw_to_Virtual_Screen;
+	#endif
+	
+	Init_NGP();
+	ngpgfx_set_pixel_format(NGPGfx);
+	MDFNNGPC_SetSoundRate(SOUND_OUTPUT_FREQUENCY);
    
-   return 0;
+	return 0;
 }
 
 static uint64_t video_frames, audio_frames;
@@ -311,7 +315,11 @@ void Run_Emu(void)
 
 	spec.SoundBufSize = spec.SoundBufSizeALMS + SoundBufSize;
 
-	Update_Video_Ingame();
+	Update_Video_Ingame(
+#ifdef FRAMESKIP
+	spec.skip
+#endif
+	);
 
 	video_frames++;
 	

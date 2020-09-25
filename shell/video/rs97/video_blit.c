@@ -22,10 +22,14 @@
 #include "scaler.h"
 #include "config.h"
 
-SDL_Surface *sdl_screen, *backbuffer, *ngp_vs;
+SDL_Surface *sdl_screen, *backbuffer, *surf;
 
 uint32_t width_of_surface;
 uint16_t* Draw_to_Virtual_Screen;
+
+#if !defined(USE_SDL_SURFACE)
+#error "USE_SDL_SURFACE define needs to be enabled for GCW0 build !"
+#endif
 
 void Init_Video()
 {
@@ -41,41 +45,51 @@ void Init_Video()
 	
 	backbuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, 0,0,0,0);
 	
-	ngp_vs = SDL_CreateRGBSurface(SDL_SWSURFACE, INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT+1, 16, 0,0,0,0);
+	surf = SDL_CreateRGBSurface(SDL_SWSURFACE, INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT+1, 16, 0,0,0,0);
 	
 	Set_Video_InGame();
 }
 
 void Set_Video_Menu()
 {
-	if (sdl_screen->w != HOST_WIDTH_RESOLUTION)
-	{
-		memcpy(ngp_vs->pixels, sdl_screen->pixels, (INTERNAL_NGP_WIDTH * INTERNAL_NGP_HEIGHT)*2);
-		sdl_screen = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, SDL_HWSURFACE);
-	}
+	sdl_screen = SDL_SetVideoMode(320, 240, 16, SDL_HWSURFACE);
 }
 
 void Set_Video_InGame()
 {
 	if (sdl_screen->w != HOST_WIDTH_RESOLUTION) sdl_screen = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, SDL_HWSURFACE);
-	Draw_to_Virtual_Screen = ngp_vs->pixels;
+	Draw_to_Virtual_Screen = surf->pixels;
 	width_of_surface = INTERNAL_NGP_WIDTH;
+	
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+#ifdef SDL_TRIPLEBUF
+	SDL_FillRect(sdl_screen, NULL, 0);
+	SDL_Flip(sdl_screen);
+#endif
 }
 
 void Close_Video()
 {
 	if (sdl_screen) SDL_FreeSurface(sdl_screen);
 	if (backbuffer) SDL_FreeSurface(backbuffer);
-	if (ngp_vs) SDL_FreeSurface(ngp_vs);
+	if (surf) SDL_FreeSurface(surf);
 	SDL_Quit();
 }
 
 void Update_Video_Menu()
 {
+	SDL_BlitSurface(backbuffer, NULL, sdl_screen, NULL);
 	SDL_Flip(sdl_screen);
 }
 
-void Update_Video_Ingame()
+void Update_Video_Ingame(
+#ifdef FRAMESKIP
+uint_fast8_t skip
+#endif
+)
 {
 	uint32_t y, pitch;
 	uint16_t *src, *dst;
@@ -84,7 +98,7 @@ void Update_Video_Ingame()
 	
 	internal_width = INTERNAL_NGP_WIDTH;
 	internal_height = INTERNAL_NGP_HEIGHT;
-	source_graph = (uint16_t* restrict)ngp_vs->pixels;
+	source_graph = (uint16_t* restrict)surf->pixels;
 	
 	keep_aspect_width = ((HOST_HEIGHT_RESOLUTION / INTERNAL_NGP_HEIGHT) * INTERNAL_NGP_WIDTH) + HOST_WIDTH_RESOLUTION/4;
 	if (keep_aspect_width > HOST_WIDTH_RESOLUTION) keep_aspect_width -= HOST_WIDTH_RESOLUTION/4;
@@ -96,7 +110,7 @@ void Update_Video_Ingame()
 		{
 			// Fullscreen
 			case 0:
-				upscale_160x152_to_320x240((uint32_t* restrict)sdl_screen->pixels, (uint32_t* restrict)ngp_vs->pixels);
+				upscale_160x152_to_320x240((uint32_t* restrict)sdl_screen->pixels, (uint32_t* restrict)surf->pixels);
 			break;
 			// Keep Aspect
 			case 1:
@@ -105,7 +119,7 @@ void Update_Video_Ingame()
 			// Native
 			case 2:
 				pitch = HOST_WIDTH_RESOLUTION;
-				src = (uint16_t* restrict)ngp_vs->pixels;
+				src = (uint16_t* restrict)surf->pixels;
 				dst = (uint16_t* restrict)sdl_screen->pixels
 					+ ((HOST_WIDTH_RESOLUTION - internal_width) / 4) * sizeof(uint16_t)
 					+ ((HOST_HEIGHT_RESOLUTION - internal_height) / 2) * pitch;
@@ -122,5 +136,9 @@ void Update_Video_Ingame()
 		}
 		SDL_UnlockSurface(sdl_screen);	
 	}
+	#ifdef FRAMESKIP
+	if (!skip) SDL_Flip(sdl_screen);
+	#else
 	SDL_Flip(sdl_screen);
+	#endif
 }
