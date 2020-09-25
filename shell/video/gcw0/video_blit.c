@@ -34,7 +34,11 @@ static SDL_Joystick *sdl_joy;
 uint32_t width_of_surface;
 uint16_t* Draw_to_Virtual_Screen;
 
+#ifdef RS97
+static const char *KEEP_ASPECT_FILENAME = "/proc/jz/ipu";
+#else
 static const char *KEEP_ASPECT_FILENAME = "/sys/devices/platform/jz-lcd.0/keep_aspect_ratio";
+#endif
 
 static inline uint_fast8_t get_keep_aspect_ratio()
 {

@@ -483,7 +483,9 @@ void Menu()
 	}
 	else
 	{
-		SDL_Delay(160);
+		SDL_Delay(16);
+		Audio_Close();
+		Audio_Init();
 	}
 	
 	/* Switch back to emulator core */
