@@ -38,20 +38,24 @@ static const char *KEEP_ASPECT_FILENAME = "/sys/devices/platform/jz-lcd.0/keep_a
 
 static inline uint_fast8_t get_keep_aspect_ratio()
 {
+#ifdef RS97
+	return 0;
+#else
 	FILE *f = fopen(KEEP_ASPECT_FILENAME, "rb");
 	if (!f) return 0;
 	char c;
 	fread(&c, 1, 1, f);
 	fclose(f);
 	return c == 'Y';
+#endif
 }
 
 static inline void set_keep_aspect_ratio(uint32_t n)
 {
-/* Shit isn't working and i'm not sure why. SimpleMenu's source code isn't helpful either*/
 #ifdef RS97
-	if (FILE *f = fopen("/proc/jz/ipu", "w")) {
-		fprintf(f, "%d", mode); // fputs(val, f);
+	FILE *f;
+	if (f = fopen("/proc/jz/ipu", "w")) {
+		fprintf(f, "%d", n);
 		fclose(f);
 	}
 #else
