@@ -191,10 +191,6 @@ static void *translate_address_write(uint32 address)
    return NULL;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* WARNING:  32-bit loads and stores apparently DON'T have to be 4-byte-aligned(so we must +2 instead of |2). */
 /* Treat all 32-bit operations as two 16-bit operations */
 extern uint32 pc;
@@ -245,8 +241,7 @@ uint16_t loadW(uint32_t address)
 
    if(address & 1)
    {
-		uint16_t ret;
-		ret = loadB(address);
+		uint16_t ret = loadB(address);
 		ret |= loadB(address + 1) << 8;
 		return(ret);
    }
@@ -289,9 +284,7 @@ uint16_t loadW(uint32_t address)
 
    if(address >= 0x70 && address <= 0x7F)
    {
-      uint16 ret;
-
-      ret = int_read8(address);
+      uint16 ret = int_read8(address);
       ret |= int_read8(address + 1) << 8;
 
       return(ret);
@@ -299,9 +292,7 @@ uint16_t loadW(uint32_t address)
 
    if(address >= 0x90 && address <= 0x97)
    {
-      uint16 ret;
-
-      ret = rtc_read8(address);
+      uint16 ret = rtc_read8(address);
       ret |= rtc_read8(address + 1) << 8;
 
       return(ret);
@@ -309,9 +300,7 @@ uint16_t loadW(uint32_t address)
 
    if(address >= 0x20 && address <= 0x29)
    {
-      uint16 ret;
-
-      ret = timer_read8(address);
+      uint16 ret = timer_read8(address);
       ret |= timer_read8(address + 1) << 8;
 
       return(ret);
@@ -327,8 +316,7 @@ uint16_t loadW(uint32_t address)
 
 uint32_t loadL(uint32_t address)
 {
-	uint32_t ret;
-	ret = loadW(address);
+	uint32_t ret = loadW(address);
 	ret |= loadW(address + 2) << 16;
 	return(ret);
 }
@@ -504,10 +492,6 @@ void storeL(uint32 address, uint32 data)
    storeW(address, data & 0xFFFF);
    storeW(address + 2, data >> 16);
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 static const uint8_t systemMemory[] = 
 {
