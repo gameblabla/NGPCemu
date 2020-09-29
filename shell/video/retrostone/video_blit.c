@@ -22,10 +22,14 @@
 #include "scaler.h"
 #include "config.h"
 
-SDL_Surface *sdl_screen, *backbuffer, *ngp_vs;
+SDL_Surface *sdl_screen, *backbuffer, *surf;
 
 uint32_t width_of_surface;
 uint16_t* Draw_to_Virtual_Screen;
+
+#if !defined(USE_SDL_SURFACE)
+#error "USE_SDL_SURFACE define needs to be enabled for Retrostone build !"
+#endif
 
 void Init_Video()
 {
@@ -37,7 +41,7 @@ void Init_Video()
 	
 	backbuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, 0,0,0,0);
 	
-	ngp_vs = SDL_CreateRGBSurface(SDL_SWSURFACE, INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT+1, 16, 0,0,0,0);
+	surf = SDL_CreateRGBSurface(SDL_SWSURFACE, INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, 0,0,0,0);
 	
 	Set_Video_InGame();
 }
@@ -46,7 +50,7 @@ void Set_Video_Menu()
 {
 	if (sdl_screen->w != HOST_WIDTH_RESOLUTION)
 	{
-		memcpy(ngp_vs->pixels, sdl_screen->pixels, (INTERNAL_NGP_WIDTH * INTERNAL_NGP_HEIGHT)*2);
+		memcpy(surf->pixels, sdl_screen->pixels, (INTERNAL_NGP_WIDTH * INTERNAL_NGP_HEIGHT)*2);
 		sdl_screen = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, SDL_HWSURFACE);
 	}
 }
@@ -54,7 +58,7 @@ void Set_Video_Menu()
 void Set_Video_InGame()
 {
 	if (sdl_screen->w != HOST_WIDTH_RESOLUTION) sdl_screen = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, SDL_HWSURFACE);
-	Draw_to_Virtual_Screen = ngp_vs->pixels;
+	Draw_to_Virtual_Screen = surf->pixels;
 	width_of_surface = INTERNAL_NGP_WIDTH;
 	
 	
@@ -72,7 +76,7 @@ void Close_Video()
 {
 	if (sdl_screen) SDL_FreeSurface(sdl_screen);
 	if (backbuffer) SDL_FreeSurface(backbuffer);
-	if (ngp_vs) SDL_FreeSurface(ngp_vs);
+	if (surf) SDL_FreeSurface(surf);
 	SDL_Quit();
 }
 
@@ -93,7 +97,7 @@ uint_fast8_t skip
 	
 	internal_width = INTERNAL_NGP_WIDTH;
 	internal_height = INTERNAL_NGP_HEIGHT;
-	source_graph = (uint16_t* restrict)ngp_vs->pixels;
+	source_graph = (uint16_t* restrict)surf->pixels;
 	
 	keep_aspect_width = ((HOST_HEIGHT_RESOLUTION / INTERNAL_NGP_HEIGHT) * INTERNAL_NGP_WIDTH) + HOST_WIDTH_RESOLUTION/4;
 	if (keep_aspect_width > HOST_WIDTH_RESOLUTION) keep_aspect_width -= HOST_WIDTH_RESOLUTION/4;

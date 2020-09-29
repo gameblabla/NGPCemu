@@ -36,14 +36,17 @@ char EEPROM_filepath[512];
 static uint8_t save_slot = 0;
 
 #ifdef IPU_SCALE
-static const int8_t upscalers_available = 1
+#define IPU_SCALE_OFFSET 1
+#define IPU_SCALE_OFFSET_Y 20
 #else
+#define IPU_SCALE_OFFSET 0
+#define IPU_SCALE_OFFSET_Y 0
 static const int8_t upscalers_available = 2
-#endif
 #ifdef SCALE2X_UPSCALER
 +1
 #endif
 ;
+#endif
 
 static void SaveState_Menu(uint_fast8_t load_mode, uint_fast8_t slot)
 {
@@ -310,7 +313,7 @@ void Menu()
 	/* Save eeprom settings each time we bring up the menu */
 	EEPROM_Menu(0);
     
-    while (((currentselection != 1) && (currentselection != 6)) || (!pressed))
+    while (((currentselection != 1) && (currentselection != 6-IPU_SCALE_OFFSET)) || (!pressed))
     {
         pressed = 0;
         
@@ -331,6 +334,7 @@ void Menu()
 		if (currentselection == 3) print_string(text, TextRed, 0, 5, 85, backbuffer->pixels);
 		else print_string(text, TextWhite, 0, 5, 85, backbuffer->pixels);
 		
+		#ifndef IPU_SCALE
         if (currentselection == 4)
         {
 			switch(option.fullscreen)
@@ -367,12 +371,13 @@ void Menu()
 				break;
 			}
         }
+        #endif
 
-		if (currentselection == 5) print_string("Input remapping", TextRed, 0, 5, 125, backbuffer->pixels);
-		else print_string("Input remapping", TextWhite, 0, 5, 125, backbuffer->pixels);
+		if (currentselection == 5-IPU_SCALE_OFFSET) print_string("Input remapping", TextRed, 0, 5, 125-IPU_SCALE_OFFSET_Y, backbuffer->pixels);
+		else print_string("Input remapping", TextWhite, 0, 5, 125-IPU_SCALE_OFFSET_Y, backbuffer->pixels);
 		
-		if (currentselection == 6) print_string("Quit", TextRed, 0, 5, 145, backbuffer->pixels);
-		else print_string("Quit", TextWhite, 0, 5, 145, backbuffer->pixels);
+		if (currentselection == 6-IPU_SCALE_OFFSET) print_string("Quit", TextRed, 0, 5, 145-IPU_SCALE_OFFSET_Y, backbuffer->pixels);
+		else print_string("Quit", TextWhite, 0, 5, 145-IPU_SCALE_OFFSET_Y, backbuffer->pixels);
 
 		print_string("Mednafen Fork by gameblabla", TextWhite, 0, 5, 205, backbuffer->pixels);
 		print_string("Credits: Ryphecha, libretro", TextWhite, 0, 5, 225, backbuffer->pixels);
@@ -386,11 +391,11 @@ void Menu()
                     case SDLK_UP:
                         currentselection--;
                         if (currentselection == 0)
-                            currentselection = 6;
+                            currentselection = 6-IPU_SCALE_OFFSET;
                         break;
                     case SDLK_DOWN:
                         currentselection++;
-                        if (currentselection == 7)
+                        if (currentselection == 7-IPU_SCALE_OFFSET)
                             currentselection = 1;
                         break;
                     case SDLK_END:
@@ -410,11 +415,13 @@ void Menu()
                             case 3:
                                 if (save_slot > 0) save_slot--;
 							break;
+							#ifndef IPU_SCALE
                             case 4:
 							option.fullscreen--;
 							if (option.fullscreen < 0)
 								option.fullscreen = upscalers_available;
 							break;
+							#endif
                         }
                         break;
                     case SDLK_RIGHT:
@@ -426,11 +433,13 @@ void Menu()
 								if (save_slot == 10)
 									save_slot = 9;
 							break;
+							#ifndef IPU_SCALE
                             case 4:
                                 option.fullscreen++;
                                 if (option.fullscreen > upscalers_available)
                                     option.fullscreen = 0;
 							break;
+							#endif
                         }
                         break;
 					default:
@@ -439,7 +448,7 @@ void Menu()
             }
             else if (Event.type == SDL_QUIT)
             {
-				currentselection = 7;
+				currentselection = 7-IPU_SCALE_OFFSET;
 				pressed = 1;
 			}
         }
@@ -448,19 +457,21 @@ void Menu()
         {
             switch(currentselection)
             {
-				case 5:
+				case 5-IPU_SCALE_OFFSET:
 					Input_Remapping();
 				break;
-                case 4 :
+				#ifndef IPU_SCALE
+                case 4:
                     option.fullscreen++;
                     if (option.fullscreen > upscalers_available)
                         option.fullscreen = 0;
-                    break;
+				break;
+                #endif
                 case 2 :
                     SaveState_Menu(1, save_slot);
 					currentselection = 1;
-                    break;
-                case 3 :
+				break;
+                case 3:
 					SaveState_Menu(0, save_slot);
 					currentselection = 1;
 				break;
@@ -472,7 +483,7 @@ void Menu()
 		Update_Video_Menu();
     }
     
-    if (currentselection == 6)
+    if (currentselection == 6-IPU_SCALE_OFFSET)
     {
         done = 1;
 	}

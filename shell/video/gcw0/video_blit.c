@@ -28,41 +28,18 @@
 
 #define FLAGS_SDL SDL_HWSURFACE | SDL_TRIPLEBUF
 
-SDL_Surface *surf, *backbuffer;
+SDL_Surface *surf;
 static SDL_Joystick *sdl_joy;
 
 uint32_t width_of_surface;
-
-static const char *KEEP_ASPECT_FILENAME = "/sys/devices/platform/jz-lcd.0/keep_aspect_ratio";
 
 #if !defined(USE_SDL_SURFACE)
 #error "USE_SDL_SURFACE define needs to be enabled for GCW0 build !"
 #endif
 
-static inline uint_fast8_t get_keep_aspect_ratio()
-{
-#ifdef RS97
-	return 0;
-#else
-	FILE *f = fopen(KEEP_ASPECT_FILENAME, "rb");
-	if (!f) return 0;
-	char c;
-	fread(&c, 1, 1, f);
-	fclose(f);
-	return c == 'Y';
+#if !defined(IPU_SCALE)
+#error "IPU_SCALE define needs to be enabled for GCW0 build !"
 #endif
-}
-
-static inline void set_keep_aspect_ratio(uint32_t n)
-{
-#ifndef RS97
-	FILE *f = fopen(KEEP_ASPECT_FILENAME, "wb");
-	if (!f) return;
-	char c = n ? 'Y' : 'N';
-	fwrite(&c, 1, 1, f);
-	fclose(f);
-#endif
-}
 
 void Init_Video()
 {
@@ -85,10 +62,6 @@ void Set_Video_Menu()
 {
 	if (surf && SDL_MUSTLOCK(surf)) SDL_UnlockSurface(surf);
 	
-	/* Fix mismatches when adjusting IPU ingame */
-	if (get_keep_aspect_ratio() == 1 && option.fullscreen == 0) option.fullscreen = 0;
-	else if (get_keep_aspect_ratio() == 0 && option.fullscreen == 1) option.fullscreen = 1;
-	
 	if (surf->w != HOST_WIDTH_RESOLUTION)
 	{
 		surf = SDL_SetVideoMode(HOST_WIDTH_RESOLUTION, HOST_HEIGHT_RESOLUTION, 16, FLAGS_SDL);
@@ -103,29 +76,17 @@ void Set_Video_InGame()
 		
 	width_of_surface = INTERNAL_NGP_WIDTH;
 		
-	switch(option.fullscreen) 
-	{
-		/* Stretched, fullscreen */
-		case 0:
-			set_keep_aspect_ratio(0);
-			surf = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
-		break;
-		/* Keep Aspect Ratio */
-		case 1:
-			set_keep_aspect_ratio(1);
-			surf = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
-		break;
-    }
+	surf = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
     
 	if (SDL_MUSTLOCK(surf)) SDL_LockSurface(surf);
 	
-	SDL_FillRect(sdl_screen, NULL, 0);
-	SDL_Flip(sdl_screen);
-	SDL_FillRect(sdl_screen, NULL, 0);
-	SDL_Flip(sdl_screen);
+	SDL_FillRect(surf, NULL, 0);
+	SDL_Flip(surf);
+	SDL_FillRect(surf, NULL, 0);
+	SDL_Flip(surf);
 #ifdef SDL_TRIPLEBUF
-	SDL_FillRect(sdl_screen, NULL, 0);
-	SDL_Flip(sdl_screen);
+	SDL_FillRect(surf, NULL, 0);
+	SDL_Flip(surf);
 #endif
 }
 
@@ -133,13 +94,11 @@ void Close_Video()
 {
 	if (SDL_JoystickOpened(0)) SDL_JoystickClose(sdl_joy);
 	if (surf) SDL_FreeSurface(surf);
-	if (backbuffer) SDL_FreeSurface(backbuffer);
 	SDL_Quit();
 }
 
 void Update_Video_Menu()
 {
-	bitmap_scale(0,0,320,240,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
 	SDL_Flip(surf);
 }
 
@@ -150,8 +109,8 @@ uint_fast8_t skip
 )
 {
 	#ifdef FRAMESKIP
-	if (!skip) SDL_Flip(sdl_screen);
+	if (!skip) SDL_Flip(surf);
 	#else
-	SDL_Flip(sdl_screen);
+	SDL_Flip(surf);
 	#endif
 }

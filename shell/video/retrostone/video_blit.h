@@ -2,10 +2,7 @@
 #define VIDEO_BLIT_H
 
 #include <SDL/SDL.h>
-extern SDL_Surface *surf;
-#define backbuffer surf
-
-extern SDL_Surface *sdl_screen, *backbuffer;
+extern SDL_Surface *sdl_screen, *backbuffer, *surf;
 
 #define HOST_WIDTH_RESOLUTION (sdl_screen->w)
 #define HOST_HEIGHT_RESOLUTION (sdl_screen->h)

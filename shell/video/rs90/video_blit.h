@@ -3,7 +3,7 @@
 
 #include <SDL/SDL.h>
 
-extern SDL_Surface *sdl_screen, *ngp_vs, *backbuffer;
+extern SDL_Surface *sdl_screen, *surf, *backbuffer;
 
 #define HOST_WIDTH_RESOLUTION (240)
 #define HOST_HEIGHT_RESOLUTION (160)
