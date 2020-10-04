@@ -22,11 +22,7 @@
 #include "scaler.h"
 #include "config.h"
 
-#ifndef SDL_TRIPLEBUF
-#define SDL_TRIPLEBUF SDL_DOUBLEBUF
-#endif
-
-#define FLAGS_SDL SDL_HWSURFACE | SDL_TRIPLEBUF
+#define FLAGS_SDL SDL_HWSURFACE | SDL_DOUBLEBUF
 
 SDL_Surface *surf;
 static SDL_Joystick *sdl_joy;

@@ -1,6 +1,6 @@
 PRGNAME     = ngpcemu
-CC			= /opt/gcw0-toolchain-static/bin/mipsel-linux-gcc
-CXX			= /opt/gcw0-toolchain-static/bin/mipsel-linux-g++
+CC			= /opt/gcw0-toolchain/bin/mipsel-linux-gcc
+CXX			= /opt/gcw0-toolchain/bin/mipsel-linux-g++
 
 #### Configuration
 
@@ -11,7 +11,8 @@ SOUND_ENGINE = sdl
 # Possible values : generic, rs90
 MENU = generic
 # Possible values : 0, YES, APPLY
-PROFILE = 0
+PROFILE = APPLY
+HUGE_PAGES = 1
 
 #### End of Configuration
 
@@ -22,10 +23,10 @@ INCLUDES	+= -Ishell/headers -Ishell/video/$(PORT) -Ishell/audio -Ishell/scalers 
 
 DEFINES		= -DLSB_FIRST -DWANT_16BPP -DFRONTEND_SUPPORTS_RGB565 -DINLINE="inline" -DWANT_STEREO_SOUND
 DEFINES		+= -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.31\" -DPACKAGE=\"mednafen\" -DMEDNAFEN_VERSION_NUMERIC=931 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DSTDC_HEADERS -D__STDC_LIMIT_MACROS -D_LOW_ACCURACY_
-DEFINES		+= -DGIT_VERSION=\"$(GIT_VERSION)\" -DNOAVERAGING -DNDEBUG -DGCW0 -DIPU_SCALE
+DEFINES		+= -DGIT_VERSION=\"$(GIT_VERSION)\" -DNOAVERAGING -DNDEBUG -DGCW0 -DUSE_SDL_SURFACE -DIPU_SCALE
    
 #-fdata-sections -ffunction-sections
-CFLAGS		= -Ofast -funroll-loops -mno-fp-exceptions -mno-check-zero-division -mframe-header-opt -fsingle-precision-constant -fno-common -mips32r2 -fno-PIC -mno-abicalls -flto
+CFLAGS		= -Ofast -funroll-loops -mno-fp-exceptions -mno-check-zero-division -mframe-header-opt -fsingle-precision-constant -fno-common -mips32r2 -flto
 CFLAGS		+= $(INCLUDES) $(DEFINES)
 ifeq ($(PROFILE), YES)
 CFLAGS 		+= -fprofile-generate=/media/data/local/home/
@@ -34,7 +35,13 @@ CFLAGS		+= -fprofile-use
 endif
 
 CXXFLAGS	= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++03
-LDFLAGS     =-nodefaultlibs -lc -lgcc -lSDL -lasound -no-pie -Wl,--as-needed -Wl,--gc-sections -flto -s
+ifeq ($(HUGE_PAGES), 0)
+LDFLAGS		+= -nodefaultlibs
+endif
+LDFLAGS     = -lc -lgcc -lSDL -lasound -Wl,--as-needed -Wl,--gc-sections -flto -s
+ifeq ($(HUGE_PAGES), 1)
+LDFLAGS		+= -Wl,-zcommon-page-size=2097152 -Wl,-zmax-page-size=2097152 -lhugetlbfs
+endif
 
 ifeq ($(PROFILE), YES)
 LDFLAGS		+= -lgcov
@@ -61,6 +68,9 @@ OBJS		= $(OBJ_C) $(OBJ_CPP)
 # Rules to make executable
 $(PRGNAME): $(OBJS)  
 	$(CC) $(CFLAGS) -std=gnu99 -o $(PRGNAME) $^ $(LDFLAGS)
+ifeq ($(HUGE_PAGES), 1)
+	hugeedit --text --data $(PRGNAME)
+endif
 	
 $(OBJ_CPP) : %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
