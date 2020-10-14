@@ -61,7 +61,6 @@ void interrupt(uint8_t index, uint8_t level)
    push16(sr);
 
    //Up the IFF
-   if(level >= 0)
    setStatusIFF((level < 7) ? (level + 1) : 7);
 
    //Access the interrupt vector table to find the jump destination
