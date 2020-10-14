@@ -15,11 +15,11 @@
 #include "../mednafen-types.h"
 #include <time.h>
 
-static uint8 rtc_latch[7];
+static uint8_t rtc_latch[7];
 
 static void update_rtc_latch(void)
 {
-   uint8 low, high;
+   uint8_t low, high;
 
    struct tm *localTime;
    time_t long_time;

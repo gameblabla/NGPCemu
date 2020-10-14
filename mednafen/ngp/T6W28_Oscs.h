@@ -29,12 +29,16 @@ struct T6W28_Square : T6W28_Osc
 {
 	int period;
 	int phase;
-	
+
+#ifdef BLIP_LOW_QUALITY
+	typedef Blip_Synth<blip_med_quality,1> Synth;
+#else
 	typedef Blip_Synth<blip_good_quality,1> Synth;
+#endif
 	const Synth* synth;
 	
 	void reset();
-	void run( sms_time_t, sms_time_t );
+	void run( ngp_time_t, ngp_time_t );
 };
 
 struct T6W28_Noise : T6W28_Osc
@@ -48,7 +52,7 @@ struct T6W28_Noise : T6W28_Osc
 	Synth synth;
 	
 	void reset();
-	void run( sms_time_t, sms_time_t );
+	void run( ngp_time_t, ngp_time_t );
 };
 
 #endif
