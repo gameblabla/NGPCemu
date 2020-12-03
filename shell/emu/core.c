@@ -113,7 +113,7 @@ void reset(void)
 
 static int LoadGame_NGP(const char *name)
 {
-	long size;
+	size_t size;
 	FILE* fp;
    
 	fp = fopen(name, "rb");
@@ -271,7 +271,7 @@ static uint32_t Timer_Read(void)
   	gettimeofday(&tval, 0);
 	return (((tval.tv_sec*1000000) + (tval.tv_usec)));
 }
-static long lastTick = 0, newTick;
+static uint32_t lastTick = 0, newTick;
 static uint32_t SkipCnt = 0, FPS = 60, FrameSkip = 0;
 static const uint32_t TblSkip[5][5] = {
     {0, 0, 0, 0, 0},

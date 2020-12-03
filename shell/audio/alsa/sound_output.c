@@ -38,6 +38,8 @@ uint32_t Audio_Init()
 	
 #ifdef FRAMESKIP
 	snd_pcm_nonblock(handle, 1);
+#else
+	snd_pcm_nonblock(handle, 0);
 #endif
 
 	/* Allocate a hardware parameters object. */

@@ -241,8 +241,7 @@ static void Input_Remapping()
                 default:
 					SDL_FillRect( backbuffer, NULL, 0 );
 					print_string("Please press button for mapping", TextWhite, TextBlue, 37, 108, backbuffer->pixels);
-					bitmap_scale(0,0,320,240,HOST_WIDTH_RESOLUTION,HOST_HEIGHT_RESOLUTION,backbuffer->w,0,(uint16_t* restrict)backbuffer->pixels,(uint16_t* restrict)sdl_screen->pixels);
-					SDL_Flip(sdl_screen);
+					Update_Video_Menu();
 					exit_map = 0;
 					while( !exit_map )
 					{
