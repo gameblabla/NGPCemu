@@ -22,7 +22,12 @@
 #include "scaler.h"
 #include "config.h"
 
-#define FLAGS_SDL SDL_HWSURFACE | SDL_DOUBLEBUF
+#ifndef SDL_TRIPLEBUF
+#define SDL_TRIPLEBUF SDL_DOUBLEBUF
+#warning "SDL_TRIPLEBUF doesn't exist. Make sure you have latest SDL version from OpenDingux"
+#endif
+
+#define FLAGS_SDL SDL_HWSURFACE | SDL_TRIPLEBUF
 
 SDL_Surface *surf;
 static SDL_Joystick *sdl_joy;
@@ -73,6 +78,10 @@ void Set_Video_InGame()
 	width_of_surface = INTERNAL_NGP_WIDTH;
 		
 	surf = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_HEIGHT, 16, FLAGS_SDL);
+	if (!surf)
+	{
+		surf = SDL_SetVideoMode(INTERNAL_NGP_WIDTH, INTERNAL_NGP_WIDTH, 16, FLAGS_SDL);
+	}
     
 	if (SDL_MUSTLOCK(surf)) SDL_LockSurface(surf);
 	
